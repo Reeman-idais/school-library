@@ -1,0 +1,28 @@
+# Web framework / API
+fastapi
+uvicorn
+
+# Database
+pymongo
+
+# CLI
+argparse
+click
+
+# Environment variables
+python-dotenv
+
+# Testing
+pytest
+pytest-mock
+
+# Code formatting & linting
+black
+flake8
+pre-commit
+
+# Logging (structured)
+python-json-logger
+
+# HTTP requests (optional)
+requests
