@@ -10,19 +10,21 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
-        matrix:
-          os: [windows-latest]   # فقط وندوز
-          python-version: ["3.11"]  # فقط بايثون 3.11
-
+      matrix:
+        os: [windows-latest]          # فقط Windows
+        python-version: ["3.11"]      # فقط Python 3.11
 
     steps:
+      # 1️⃣ جلب الكود
       - uses: actions/checkout@v3
 
+      # 2️⃣ إعداد Python
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
+      # 3️⃣ تثبيت Poetry
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
@@ -32,6 +34,12 @@ jobs:
           virtualenvs-path: '{cache-dir}/virtualenvs'
           installer-parallel: true
 
+      # 4️⃣ إضافة Poetry للـ PATH على Windows
+      - name: Add Poetry to PATH
+        if: runner.os == 'Windows'
+        run: echo "$Env:USERPROFILE\\.poetry\\bin" >> $Env:GITHUB_PATH
+
+      # 5️⃣ استرجاع الـ virtualenv من الكاش
       - name: Cache Poetry dependencies
         uses: actions/cache@v3
         with:
@@ -40,19 +48,23 @@ jobs:
           restore-keys: |
             venv-${{ runner.os }}-${{ matrix.python-version }}-
 
+      # 6️⃣ تثبيت تبعيات المشروع
       - name: Install dependencies
         run: poetry install --no-interaction --no-root
 
+      # 7️⃣ تنسيق الكود
       - name: Format Code
         run: |
           poetry run black .
           poetry run isort .
 
+      # 8️⃣ فحص الكود (Lint)
       - name: Lint Code
         run: |
           poetry run flake8 .
           poetry run pylint cli models services storage validation lib_logging main.py web/server.py || true
           poetry run mypy . || true
 
+      # 9️⃣ تشغيل الاختبارات
       - name: Run Tests
         run: poetry run pytest -v --tb=short
