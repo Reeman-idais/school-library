@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import List, Optional
 
 from lib_logging.logger import get_logger
-
 from models.book import Book
 
 logger = get_logger(__name__)

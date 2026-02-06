@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from uuid import UUID, uuid4
+
 from .role import Role
 
 
