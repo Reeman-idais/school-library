@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# ⚠️ Git commit-msg hook
+# Simple instructions:
+# 1. Copy this entire file.
+# 2. Paste it into your hooks folder as: .git/hooks/commit-msg
+# 3. Remove the ".sample" from its name if present.
+# That's it! Now commit messages will be checked automatically.
+
+MSG_FILE="$1"
+MSG=$(head -n 1 "$MSG_FILE")  # نتحقق من السطر الأول فقط
+
+# Regex: يبدأ بـ SL-رقم ثم فراغ ثم نص
+if ! echo "$MSG" | grep -qE '^SL-[0-9]+ .+'; then
+    echo >&2 "Error: Commit message must follow the format: SL-<number>: Description"
+    echo >&2 "Example: SL-123 Fix the login bug"
+    exit 1
+fi
+
+# Optional: منع duplicate Signed-off-by lines
+DUP=$(grep '^Signed-off-by: ' "$MSG_FILE" | sort | uniq -c | sed -e '/^[ 	]*1[ 	]/d')
+if [ "$DUP" != "" ]; then
+    echo >&2 "Error: Duplicate Signed-off-by lines."
+    exit 1
+fi

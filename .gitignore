@@ -1,0 +1,133 @@
+### Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+### Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+### IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.cursor/
+*.sublime-project
+*.sublime-workspace
+
+### Testing
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+.hypothesis/
+.tox/
+
+### Type Checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+
+### Pre-commit
+.pre-commit-cache/
+
+### Dependencies (Poetry)
+poetry.lock
+*.lock
+
+### Environment & Secrets (CRITICAL - Never commit!)
+.env
+.env.local
+.env.*.local
+.env.test
+.env.production
+*.pem
+*.key
+*.crt
+id_rsa*
+known_hosts
+credentials.json
+service-account-key.json
+
+### Project Data (Runtime Files)
+data/books.json
+data/users.json
+data/books.json.bak
+data/users.json.bak
+logs/
+logs/**/*.log
+*.log
+log/
+
+### Docker
+.dockerignore
+docker-compose.override.yml
+.docker/
+
+### Kubernetes
+.kube/
+kubeconfig*
+*.yaml.bak
+k8s/*.old
+
+### Terraform (CRITICAL - State files contain secrets!)
+terraform/.terraform/
+terraform/terraform.tfstate
+terraform/terraform.tfstate.*
+terraform/.terraform.lock.hcl
+terraform/terraform.tfvars
+terraform/terraform.tfvars.json
+terraform/**/.terraform/
+terraform/**/*.tfstate*
+terraform/**/.terraform.lock.hcl
+
+### Monitoring
+monitoring/data/
+monitoring/logs/
+prometheus_data/
+grafana_data/
+elasticsearch_data/
+*.grafana-backup
+
+### Cloud Provider Credentials
+aws/credentials
+aws/config
+gcloud/
+~/.ssh/
+
+### Misc
+.cache/
+.git/
+*.tmp
+*.temp
+.~*
+*backup*
+*.bak
+terraform/.terraform-placeholder

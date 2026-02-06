@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+# ⚠️ Git pre-commit hook
+# Simple instructions:
+# 1. Copy this entire file.
+# 2. Paste it into your hooks folder as: .git/hooks/pre-commit
+# 3. Remove the ".sample" from its name if present.
+# 4. Make sure this file is executable (chmod +x pre-commit on Linux/Mac, Git Bash handles on Windows)
+# Now, every time you commit, code formatting and linting will run automatically.
+
+# 1️⃣ Run isort (sort imports)
+echo "Running isort..."
+isort .
+
+if [ $? -ne 0 ]; then
+    echo >&2 "Error: isort failed. Fix import sorting before committing."
+    exit 1
+fi
+
+# 2️⃣ Run Black (code formatting)
+echo "Running black..."
+black .
+
+if [ $? -ne 0 ]; then
+    echo >&2 "Error: black formatting failed. Fix formatting before committing."
+    exit 1
+fi
+
+# 3️⃣ Run Flake8 (linting)
+echo "Running flake8..."
+flake8 .
+
+if [ $? -ne 0 ]; then
+    echo >&2 "Error: flake8 detected issues. Fix them before committing."
+    exit 1
+fi
+
+echo "✅ All checks passed. Ready to commit!"
+exit 0
