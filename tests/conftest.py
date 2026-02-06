@@ -1,12 +1,14 @@
 """Pytest configuration and fixtures."""
 
-import pytest
 import sys
 from pathlib import Path
 from unittest.mock import Mock
+
+import pytest
+
 from models.book import Book
-from models.user import User
 from models.role import Role
+from models.user import User
 
 # Add project root to path
 project_root = Path(__file__).parent.parent

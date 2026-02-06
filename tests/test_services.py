@@ -1,9 +1,11 @@
 """Tests for service layer with mocked dependencies."""
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
+
 from models.book import Book, BookStatus
-from models.user import User, Role
+from models.user import Role, User
 from services.book_service import BookService
 from services.user_service import UserService
 

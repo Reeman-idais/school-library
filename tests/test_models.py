@@ -1,9 +1,8 @@
 """Tests for model classes."""
 
-import pytest
 from models.book import Book, BookStatus
-from models.user import User
 from models.role import Role
+from models.user import User
 
 
 class TestBook:

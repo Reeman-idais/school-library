@@ -1,8 +1,10 @@
 """Integration tests for the library management system."""
 
-import pytest
 import tempfile
 from pathlib import Path
+
+import pytest
+
 from models.book import BookStatus
 from services.book_service import BookService
 from services.user_service import UserService

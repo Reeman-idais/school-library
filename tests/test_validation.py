@@ -1,8 +1,7 @@
 """Tests for validation functions."""
 
-import pytest
-from validation.user_validator import validate_username, validate_role
-from validation.isbn_validator import validate_isbn10, normalize_isbn
+from validation.isbn_validator import normalize_isbn, validate_isbn10
+from validation.user_validator import validate_role, validate_username
 
 
 class TestUserValidator:
