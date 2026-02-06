@@ -2,9 +2,9 @@
 
 from typing import List, Optional, Tuple
 
+from lib_logging.logger import get_logger
 from models.book import Book, BookStatus
 from storage.book_storage import BookStorage
-from lib_logging.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -12,7 +12,7 @@ logger = get_logger(__name__)
 class BorrowService:
     """Service for borrow and return operations."""
 
-    def __init__(self, storage: BookStorage = None):
+    def __init__(self, storage: Optional[BookStorage] = None):
         """
         Initialize borrow service.
 

@@ -16,7 +16,7 @@ logger = get_logger(__name__)
 class BookService:
     """Service for book-related operations."""
 
-    def __init__(self, storage: BookStorage = None):
+    def __init__(self, storage: Optional[BookStorage] = None):
         """
         Initialize book service.
 
@@ -44,8 +44,9 @@ class BookService:
 
         next_id = self.storage.get_next_book_id()
         # Validate title/author only; do NOT validate internal auto-generated ID
-        # validate_book_for_creation signature: (book_id, title, author)
-        is_valid, error_msg = validate_book_for_creation(None, title, author)
+        is_valid, error_msg = validate_book_for_creation(
+            book_id=None, title=title, author=author
+        )
         if not is_valid:
             logger.warning(f"Book validation failed: {error_msg}")
             return None, error_msg

@@ -2,11 +2,11 @@
 
 from typing import Optional, Tuple
 
-from models.user import User
-from models.role import Role
-from storage.user_storage import UserStorage
-from validation.user_validator import validate_username, validate_role
 from lib_logging.logger import get_logger
+from models.role import Role
+from models.user import User
+from storage.user_storage import UserStorage
+from validation.user_validator import validate_role, validate_username
 
 logger = get_logger(__name__)
 
@@ -14,7 +14,7 @@ logger = get_logger(__name__)
 class UserService:
     """Service for user-related operations."""
 
-    def __init__(self, storage: UserStorage = None):
+    def __init__(self, storage: Optional[UserStorage] = None):
         """
         Initialize user service.
 
@@ -101,6 +101,9 @@ class UserService:
 
         # Create user
         try:
+            # `validate_role` may return (True, "", role) where role has type Optional[Role]
+            # but after the `is_valid` check above, `role` must be non-None.
+            assert role is not None
             user, is_new = self.get_or_create_user(username, role)
             if is_new:
                 return user, ""
