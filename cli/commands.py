@@ -2,11 +2,11 @@
 
 from typing import Optional, Tuple
 
-from models.role import Role
+from lib_logging.logger import get_logger
 from models.book import BookStatus
+from models.role import Role
 from services.book_service import BookService
 from services.user_service import UserService
-from lib_logging.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -108,6 +108,7 @@ def handle_add_book(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert user_role is not None, "user_role should not be None after validation"
     if not _check_role_permission(Role.LIBRARIAN, user_role):
         print(f"ERROR: Only librarians can add books. Your role: {user_role.value}")
         return 1
@@ -120,6 +121,7 @@ def handle_add_book(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert book is not None, "book should not be None after successful add"
     print(f"SUCCESS: Added book '{book.title}' by {book.author} (ID: {book.id})")
     return 0
 
@@ -147,6 +149,7 @@ def handle_delete_book(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert user_role is not None, "user_role should not be None after validation"
     if not _check_role_permission(Role.LIBRARIAN, user_role):
         print(f"ERROR: Only librarians can delete books. Your role: {user_role.value}")
         return 1
@@ -156,6 +159,7 @@ def handle_delete_book(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert book_id_int is not None, "book_id_int should not be None after validation"
     svc = _resolve_book_service(book_service)
     success, error_msg = svc.delete_book(book_id_int)
 
@@ -194,6 +198,7 @@ def handle_update_book(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert user_role is not None, "user_role should not be None after validation"
     if not _check_role_permission(Role.LIBRARIAN, user_role):
         print(f"ERROR: Only librarians can update books. Your role: {user_role.value}")
         return 1
@@ -208,6 +213,7 @@ def handle_update_book(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert book_id_int is not None, "book_id_int should not be None after validation"
     svc = _resolve_book_service(book_service)
     book, error_msg = svc.update_book_info(book_id_int, title=title, author=author)
 
@@ -215,6 +221,7 @@ def handle_update_book(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert book is not None, "book should not be None after successful update"
     print(f"SUCCESS: Updated book '{book.title}' (ID: {book_id})")
     return 0
 
@@ -244,6 +251,7 @@ def handle_update_status(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert user_role is not None, "user_role should not be None after validation"
     if not _check_role_permission(Role.LIBRARIAN, user_role):
         print(
             f"ERROR: Only librarians can update book status. Your role: {user_role.value}"
@@ -256,6 +264,7 @@ def handle_update_status(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert book_id_int is not None, "book_id_int should not be None after validation"
     # Parse status
     try:
         book_status = BookStatus(status)
@@ -274,6 +283,7 @@ def handle_update_status(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert book is not None, "book should not be None after successful update"
     print(f"SUCCESS: Updated book '{book.title}' (ID: {book_id}) status to {status}")
     return 0
 
@@ -340,6 +350,7 @@ def handle_pick_book(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert user_role is not None, "user_role should not be None after validation"
     if not _check_role_permission(Role.USER, user_role):
         print(f"ERROR: Only users can pick books. Your role: {user_role.value}")
         return 1
@@ -350,6 +361,7 @@ def handle_pick_book(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert book_id_int is not None, "book_id_int should not be None after validation"
     # Pick book
     svc = _resolve_book_service(book_service)
     book, error_msg = svc.pick_book(book_id_int, username)
@@ -358,6 +370,7 @@ def handle_pick_book(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert book is not None, "book should not be None after successful pick"
     print(
         f"SUCCESS: User '{username}' picked book '{book.title}' (ID: {book_id}). Waiting for librarian approval."
     )
@@ -385,6 +398,7 @@ def handle_list_picked(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert user_role is not None, "user_role should not be None after validation"
     if not _check_role_permission(Role.LIBRARIAN, user_role):
         print(
             f"ERROR: Only librarians can view picked books. Your role: {user_role.value}"
@@ -434,6 +448,7 @@ def handle_approve_borrow(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert user_role is not None, "user_role should not be None after validation"
     if not _check_role_permission(Role.LIBRARIAN, user_role):
         print(
             f"ERROR: Only librarians can approve borrows. Your role: {user_role.value}"
@@ -445,6 +460,7 @@ def handle_approve_borrow(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert book_id_int is not None, "book_id_int should not be None after validation"
     svc = _resolve_book_service(book_service)
     book, error_msg = svc.approve_borrow(book_id_int)
 
@@ -452,6 +468,7 @@ def handle_approve_borrow(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert book is not None, "book should not be None after successful approve"
     print(
         f"SUCCESS: Approved borrow for book '{book.title}' (ID: {book_id}) by '{book.picked_by}'"
     )
@@ -481,6 +498,7 @@ def handle_return_book(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert user_role is not None, "user_role should not be None after validation"
     if not _check_role_permission(Role.LIBRARIAN, user_role):
         print(f"ERROR: Only librarians can return books. Your role: {user_role.value}")
         return 1
@@ -490,6 +508,7 @@ def handle_return_book(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert book_id_int is not None, "book_id_int should not be None after validation"
     svc = _resolve_book_service(book_service)
     book, error_msg = svc.return_book(book_id_int)
 
@@ -497,6 +516,7 @@ def handle_return_book(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert book is not None, "book should not be None after successful return"
     print(f"SUCCESS: Returned book '{book.title}' (ID: {book_id}) to Available status")
     return 0
 
@@ -523,6 +543,7 @@ def handle_register_user(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert user is not None, "user should not be None after successful registration"
     print(
         f"SUCCESS: Registered user '{user.username}' with role '{user.role.value}' (ID: {user.id})"
     )

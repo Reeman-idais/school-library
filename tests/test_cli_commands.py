@@ -1,9 +1,9 @@
 """Tests for CLI commands with mocked services."""
 
-import pytest
 from unittest.mock import Mock, patch
-from models.book import Book, BookStatus
-from models.role import Role
+
+import pytest
+
 from cli.commands import (
     handle_add_book,
     handle_delete_book,
@@ -11,6 +11,7 @@ from cli.commands import (
     handle_pick_book,
     handle_update_status,
 )
+from models.book import Book, BookStatus
 
 
 @pytest.mark.unit
