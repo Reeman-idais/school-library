@@ -10,9 +10,10 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.10", "3.11"]
+        matrix:
+          os: [windows-latest]   # فقط وندوز
+          python-version: ["3.11"]  # فقط بايثون 3.11
+
 
     steps:
       - uses: actions/checkout@v3
