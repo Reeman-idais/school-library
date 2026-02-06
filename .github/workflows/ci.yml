@@ -24,14 +24,15 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      # 3️⃣ تثبيت Poetry باستخدام pipx (مستقر على جميع الأنظمة)
+      # 3️⃣ تثبيت Poetry مباشرة عبر pip
       - name: Install Poetry
-        run: |
-          python -m pip install --upgrade pip
-          pip install pipx
-          pipx install poetry==1.5.1
+        run: pip install poetry==1.5.1
 
-      # 5️⃣ استرجاع الـ virtualenv من الكاش
+      # 4️⃣ إضافة Python Scripts للـ PATH على Windows
+      - name: Add Python Scripts to PATH
+        if: runner.os == 'Windows'
+        run: echo "$Env:PYTHONUSERBASE\Scripts" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
+        shell: pwsh
       - name: Cache Poetry dependencies
         uses: actions/cache@v3
         with:
@@ -42,21 +43,21 @@ jobs:
 
       # 6️⃣ تثبيت تبعيات المشروع
       - name: Install dependencies
-        run: poetry install --no-interaction --no-root
+        run: python -m poetry install --no-interaction --no-root
 
       # 7️⃣ تنسيق الكود
       - name: Format Code
         run: |
-          poetry run black .
-          poetry run isort .
+          python -m poetry run black .
+          python -m poetry run isort .
 
       # 8️⃣ فحص الكود (Lint)
       - name: Lint Code
         run: |
-          poetry run flake8 .
-          poetry run pylint cli models services storage validation lib_logging main.py web/server.py || true
-          poetry run mypy . || true
+          python -m poetry run flake8 .
+          python -m poetry run pylint cli models services storage validation lib_logging main.py web/server.py || true
+          python -m poetry run mypy . || true
 
       # 9️⃣ تشغيل الاختبارات
       - name: Run Tests
-        run: poetry run pytest -v --tb=short
+        run: python -m poetry run pytest -v --tb=short
