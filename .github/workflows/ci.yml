@@ -24,20 +24,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      # 3️⃣ تثبيت Poetry
+      # 3️⃣ تثبيت Poetry باستخدام pipx (مستقر على جميع الأنظمة)
       - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: "1.5.1"
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-          virtualenvs-path: '{cache-dir}/virtualenvs'
-          installer-parallel: true
-
-      # 4️⃣ إضافة Poetry للـ PATH على Windows
-      - name: Add Poetry to PATH
-        if: runner.os == 'Windows'
-        run: echo "$Env:USERPROFILE\\.poetry\\bin" >> $Env:GITHUB_PATH
+        run: |
+          python -m pip install --upgrade pip
+          pip install pipx
+          pipx install poetry==1.5.1
 
       # 5️⃣ استرجاع الـ virtualenv من الكاش
       - name: Cache Poetry dependencies
