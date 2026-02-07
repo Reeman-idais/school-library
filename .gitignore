@@ -131,3 +131,5 @@ gcloud/
 *backup*
 *.bak
 terraform/.terraform-placeholder
+
+*.md
