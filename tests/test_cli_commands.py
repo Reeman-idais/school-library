@@ -29,14 +29,12 @@ class TestCLICommands:
 
         # Execute command
         result = handle_add_book(
-            "1001", "Test Book", "Test Author", True, None, None, mock_service
+            "1001", "Test Book", "Test Author", True, None, mock_service
         )
 
         # Assertions
         assert result == 0
-        mock_service.add_book.assert_called_once_with(
-            1001, "Test Book", "Test Author", isbn=None
-        )
+        mock_service.add_book.assert_called_once_with(1001, "Test Book", "Test Author")
 
     @patch("cli.commands.BookService")
     def test_handle_add_book_validation_error(self, mock_book_service_class):
