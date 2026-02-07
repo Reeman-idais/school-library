@@ -8,11 +8,10 @@ on:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
     strategy:
       matrix:
-        os: [windows-latest]          # فقط Windows
-        python-version: ["3.11"]      # فقط Python 3.11
+        python-version: ["3.11", "3.12"]
 
     steps:
       # 1️⃣ جلب الكود
@@ -27,12 +26,6 @@ jobs:
       # 3️⃣ تثبيت Poetry مباشرة عبر pip
       - name: Install Poetry
         run: pip install poetry==1.5.1
-
-      # 4️⃣ إضافة Python Scripts للـ PATH على Windows
-      - name: Add Python Scripts to PATH
-        if: runner.os == 'Windows'
-        run: echo "$Env:PYTHONUSERBASE\Scripts" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf8 -Append
-        shell: pwsh
       - name: Cache Poetry dependencies
         uses: actions/cache@v3
         with:
@@ -43,21 +36,19 @@ jobs:
 
       # 6️⃣ تثبيت تبعيات المشروع
       - name: Install dependencies
-        run: python -m poetry install --no-interaction --no-root
+        run: python -m poetry install --no-interaction
 
       # 7️⃣ تنسيق الكود
       - name: Format Code
-        run: |
-          python -m poetry run black .
-          python -m poetry run isort .
+        shell: pwsh
+        run: .\\scripts\\format.ps1
 
       # 8️⃣ فحص الكود (Lint)
       - name: Lint Code
-        run: |
-          python -m poetry run flake8 .
-          python -m poetry run pylint cli models services storage validation lib_logging main.py web/server.py || true
-          python -m poetry run mypy . || true
+        shell: pwsh
+        run: .\\scripts\\lint.ps1
 
       # 9️⃣ تشغيل الاختبارات
       - name: Run Tests
-        run: python -m poetry run pytest -v --tb=short
+        shell: pwsh
+        run: .\\scripts\\test.ps1
