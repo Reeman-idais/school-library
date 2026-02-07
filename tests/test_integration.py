@@ -45,16 +45,16 @@ class TestIntegration:
     def test_add_and_list_books_integration(self, book_service):
         """Test adding books and listing them."""
         # Add first book
-        book1, error1 = book_service.add_book("Book 1", "Author 1")
+        book1, error1 = book_service.add_book(1001, "Book 1", "Author 1")
         assert book1 is not None
         assert error1 == ""
-        assert book1.id == 1
+        assert book1.id == 1001
 
         # Add second book
-        book2, error2 = book_service.add_book("Book 2", "Author 2")
+        book2, error2 = book_service.add_book(1002, "Book 2", "Author 2")
         assert book2 is not None
         assert error2 == ""
-        assert book2.id == 2
+        assert book2.id == 1002
 
         # List all books
         all_books = book_service.list_all_books()
@@ -65,7 +65,7 @@ class TestIntegration:
     def test_pick_and_approve_borrow_workflow(self, book_service):
         """Test complete workflow: add -> pick -> approve."""
         # Add book
-        book, _ = book_service.add_book("Test Book", "Test Author")
+        book, _ = book_service.add_book(1001, "Test Book", "Test Author")
         assert book.status == BookStatus.AVAILABLE
 
         # User picks book
@@ -81,7 +81,7 @@ class TestIntegration:
     def test_update_and_delete_workflow(self, book_service):
         """Test updating and deleting books."""
         # Add book
-        book, _ = book_service.add_book("Original Title", "Original Author")
+        book, _ = book_service.add_book(1001, "Original Title", "Original Author")
         book_id = book.id
 
         # Update title
@@ -100,8 +100,8 @@ class TestIntegration:
     def test_list_picked_books(self, book_service):
         """Test listing picked books."""
         # Add books
-        book1, _ = book_service.add_book("Book 1", "Author 1")
-        book2, _ = book_service.add_book("Book 2", "Author 2")
+        book1, _ = book_service.add_book(1001, "Book 1", "Author 1")
+        book2, _ = book_service.add_book(1002, "Book 2", "Author 2")
 
         # Pick books
         book_service.pick_book(book1.id, "user1")
@@ -117,7 +117,7 @@ class TestIntegration:
     def test_return_book_workflow(self, book_service):
         """Test returning a borrowed book."""
         # Add and borrow book
-        book, _ = book_service.add_book("Test Book", "Test Author")
+        book, _ = book_service.add_book(1001, "Test Book", "Test Author")
         book_service.pick_book(book.id, "testuser")
         book_service.approve_borrow(book.id)
 
@@ -131,7 +131,7 @@ class TestIntegration:
         # Create first service and add book
         storage1 = BookStorage(data_dir=temp_data_dir)
         service1 = BookService(storage=storage1)
-        book, _ = service1.add_book("Persistent Book", "Author")
+        book, _ = service1.add_book(1001, "Persistent Book", "Author")
 
         # Create new service instance
         storage2 = BookStorage(data_dir=temp_data_dir)
