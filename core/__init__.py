@@ -1,8 +1,8 @@
 """Core abstractions and design patterns."""
 
-from .repository import Repository, BookRepository, UserRepository
 from .factory import ServiceFactory, StorageFactory
-from .strategy import ValidationStrategy, BookValidationStrategy, UserValidationStrategy
+from .repository import BookRepository, Repository, UserRepository
+from .strategy import BookValidationStrategy, UserValidationStrategy, ValidationStrategy
 
 __all__ = [
     "Repository",

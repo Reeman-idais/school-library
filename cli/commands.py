@@ -304,7 +304,7 @@ def handle_list_books(
         Exit code (0 for success, 1 for failure)
     """
     # Check role (both librarian and user can list)
-    user_role, error_msg = _get_role_from_login(is_librarian, username)
+    _, error_msg = _get_role_from_login(is_librarian, username)
     if error_msg:
         print(f"ERROR: {error_msg}")
         return 1

@@ -31,7 +31,7 @@ class BookValidationStrategy:
     ) -> Tuple[bool, str]:
         from validation.book_validator import validate_book_data
 
-        is_valid, msg = validate_book_data(title=title, author=author, isbn=isbn)
+        is_valid, msg = validate_book_data(title=title, author=author)
         return is_valid, msg
 
 

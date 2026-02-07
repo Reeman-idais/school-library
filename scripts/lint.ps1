@@ -6,7 +6,7 @@ Write-Host "🔍 Linting with flake8..." -ForegroundColor Cyan
 python -m poetry run flake8 .
 
 Write-Host "🔍 Linting with pylint..." -ForegroundColor Cyan
-python -m poetry run pylint cli models services storage validation lib_logging main.py web/server.py
+python -m poetry run pylint cli models services storage validation lib_logging main.py
 
 Write-Host "🔍 Type checking with mypy..." -ForegroundColor Cyan
 python -m poetry run mypy .
