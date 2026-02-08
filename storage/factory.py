@@ -1,7 +1,6 @@
 """Storage factory for creating appropriate storage implementation."""
 
 import os
-from typing import Union
 
 from lib_logging.logger import get_logger
 
@@ -11,7 +10,7 @@ logger = get_logger(__name__)
 class StorageFactory:
     """Factory for creating storage implementations based on configuration."""
 
-    _instances = {}  # Cache for singleton pattern
+    _instances: dict[str, object] = {}  # Cache for singleton pattern
 
     @classmethod
     def create_book_storage(cls):

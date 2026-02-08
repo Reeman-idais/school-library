@@ -10,8 +10,8 @@ from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 # Configure Python path to include the project root
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from config.database import MongoDBConfig, MongoDBConnection
-from lib_logging.logger import get_logger
+from config.database import MongoDBConfig, MongoDBConnection  # noqa: E402
+from lib_logging.logger import get_logger  # noqa: E402
 
 logger = get_logger(__name__)
 
@@ -112,8 +112,8 @@ def main() -> None:
         # Wait for MongoDB to be ready
         wait_for_mongodb(config)
 
-        # Create database connection
-        client = MongoDBConnection.get_connection(config)
+        # Create database connection (establish connection)
+        MongoDBConnection.get_connection(config)
         logger.info(f"Connected to MongoDB: {config.database}")
 
         # Create indexes
