@@ -5,14 +5,15 @@ import shutil
 from pathlib import Path
 from typing import List, Optional
 
-from models.book import Book
 from lib_logging.logger import get_logger
+from models.book import Book
 
 logger = get_logger(__name__)
 
 
 class BookStorage:
-    """Handles book data persistence in JSON format with auto-incrementing IDs."""
+    """Handles book data persistence in JSON format
+    with auto-incrementing IDs."""
 
     def __init__(self, data_dir: Optional[Path] = None):
         if data_dir is None:
