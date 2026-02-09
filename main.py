@@ -31,8 +31,12 @@ def create_parser() -> argparse.ArgumentParser:
     add_book_parser = subparsers.add_parser(
         "add-book", help="Add a new book (librarian only)"
     )
+    add_book_parser.add_argument(
+        "--id", required=True, dest="book_id", help="Book ID (integer)"
+    )
     add_book_parser.add_argument("--title", required=True, help="Book title")
     add_book_parser.add_argument("--author", required=True, help="Book author")
+    add_book_parser.add_argument("--isbn", help="ISBN (optional)")
     add_book_parser.add_argument(
         "--librarian", action="store_true", help="Login as librarian"
     )
@@ -145,7 +149,13 @@ def execute_command(args, book_service, user_service):
     """Route to the appropriate CLI handler using a mapping."""
     command_map = {
         "add-book": lambda: handle_add_book(
-            args.title, args.author, args.librarian, None, book_service
+            args.book_id,
+            args.title,
+            args.author,
+            args.librarian,
+            None,
+            getattr(args, "isbn", None),
+            book_service,
         ),
         "delete-book": lambda: handle_delete_book(
             args.book_id, args.librarian, None, book_service

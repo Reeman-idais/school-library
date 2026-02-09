@@ -25,34 +25,43 @@ class BookService:
         """
         self.storage = storage or BookStorage()
 
-    def add_book(self, title: str, author: str) -> Tuple[Optional[Book], str]:
+    def add_book(
+        self, book_id: int, title: str, author: str, isbn: str = None
+    ) -> Tuple[Optional[Book], str]:
         """
-        Add a new book to the library with auto-incrementing ID.
+        Add a new book to the library with user-provided ID.
 
         Args:
+            book_id: Book ID (provided by user)
             title: Book title
             author: Book author
+            isbn: ISBN (optional)
 
         Returns:
             Tuple of (book, error_message)
             If successful: (Book object, "")
             If failed: (None, error_message)
         """
-        # Validate input and compute next ID
+        # Validate input
         title = title.strip()
         author = author.strip()
 
-        next_id = self.storage.get_next_book_id()
-        # Validate title/author only; do NOT validate internal auto-generated ID
+        # Check if book ID already exists
+        if self.storage.get_book_by_id(book_id):
+            error_msg = f"Book with ID {book_id} already exists"
+            logger.warning(error_msg)
+            return None, error_msg
+
+        # Validate title/author and ID (convert ID to string for validation)
         is_valid, error_msg = validate_book_for_creation(
-            book_id=None, title=title, author=author
+            book_id=str(book_id), title=title, author=author, isbn=isbn
         )
         if not is_valid:
             logger.warning(f"Book validation failed: {error_msg}")
             return None, error_msg
 
-        # Create book with auto-incrementing ID
-        book = Book.create(next_id, title, author)
+        # Create book with user-provided ID
+        book = Book.create(book_id, title, author, isbn=isbn)
 
         # Save to storage
         if self.storage.add_book(book):

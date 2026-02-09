@@ -23,16 +23,20 @@ class TestCLICommands:
         """Test successful book addition via CLI."""
         # Setup mock
         mock_service = Mock()
-        mock_book = Book.create(1, "Test Book", "Test Author")
+        mock_book = Book.create(1001, "Test Book", "Test Author")
         mock_service.add_book.return_value = (mock_book, "")
         mock_book_service_class.return_value = mock_service
 
         # Execute command
-        result = handle_add_book("Test Book", "Test Author", True, None)
+        result = handle_add_book(
+            "1001", "Test Book", "Test Author", True, None, None, mock_service
+        )
 
         # Assertions
         assert result == 0
-        mock_service.add_book.assert_called_once_with("Test Book", "Test Author")
+        mock_service.add_book.assert_called_once_with(
+            1001, "Test Book", "Test Author", isbn=None
+        )
 
     @patch("cli.commands.BookService")
     def test_handle_add_book_validation_error(self, mock_book_service_class):

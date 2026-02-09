@@ -84,24 +84,34 @@ def _parse_book_id(book_id_str: str) -> Tuple[Optional[int], Optional[str]]:
 
 
 def handle_add_book(
+    book_id_str: str,
     title: str,
     author: str,
     is_librarian: bool = False,
     username: Optional[str] = None,
+    isbn: Optional[str] = None,
     book_service: Optional[BookService] = None,
 ) -> int:
     """
     Handle add-book command (librarian only).
 
     Args:
+        book_id_str: Book ID (integer as string)
         title: Book title
         author: Book author
         is_librarian: True if logging in as librarian
         username: Username (not used for librarian, required for users but users can't add books)
+        isbn: ISBN (optional)
 
     Returns:
         Exit code (0 for success, 1 for failure)
     """
+    # Parse book ID
+    book_id, error_msg = _parse_book_id(book_id_str)
+    if error_msg:
+        print(f"ERROR: {error_msg}")
+        return 1
+
     # Check role
     user_role, error_msg = _get_role_from_login(is_librarian, username)
     if error_msg:
@@ -115,14 +125,17 @@ def handle_add_book(
 
     # Add book
     svc = _resolve_book_service(book_service)
-    book, error_msg = svc.add_book(title, author)
+    book, error_msg = svc.add_book(book_id, title, author, isbn=isbn)
 
     if error_msg:
         print(f"ERROR: {error_msg}")
         return 1
 
     assert book is not None, "book should not be None after successful add"
-    print(f"SUCCESS: Added book '{book.title}' by {book.author} (ID: {book.id})")
+    isbn_display = f" (ISBN: {book.isbn})" if book.isbn else ""
+    print(
+        f"SUCCESS: Added book '{book.title}' by {book.author} (ID: {book.id}){isbn_display}"
+    )
     return 0
 
 

@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management System - Logs Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        nav {
+            display: flex;
+            gap: 15px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
+
+        nav a:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .stat-card.info .value { color: #2196F3; }
+        .stat-card.warning .value { color: #FF9800; }
+        .stat-card.error .value { color: #F44336; }
+
+        .filters {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .filter-group input[type="text"] {
+            width: 100%;
+        }
+
+        .actions {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .chart-wrapper {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .chart-wrapper h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .table-container {
+            padding: 30px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        thead {
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+        }
+
+        th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #ddd;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        th:hover {
+            background: #e9ecef;
+        }
+
+        th.sort-asc::after {
+            content: ' ▲';
+            font-size: 10px;
+        }
+
+        th.sort-desc::after {
+            content: ' ▼';
+            font-size: 10px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .log-level {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .log-level.INFO {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .log-level.WARNING {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .log-level.ERROR {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        .logger-name {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .message {
+            max-width: 500px;
+            word-wrap: break-word;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .filters {
+                grid-template-columns: 1fr;
+            }
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Library Management System - Logs Dashboard</h1>
+            <nav>
+                <a href="docs.html">📚 Documentation</a>
+                <a href="logs.html">📊 Logs Dashboard</a>
+            </nav>
+        </header>
+
+        <div class="stats-panel">
+            <div class="stat-card">
+                <div class="label">Total Logs</div>
+                <div class="value" id="stat-total">0</div>
+            </div>
+            <div class="stat-card info">
+                <div class="label">Info Logs</div>
+                <div class="value" id="stat-info">0</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="label">Warnings</div>
+                <div class="value" id="stat-warning">0</div>
+            </div>
+            <div class="stat-card error">
+                <div class="label">Errors</div>
+                <div class="value" id="stat-error">0</div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label>Log Level</label>
+                <select id="filter-level">
+                    <option value="">All Levels</option>
+                    <option value="INFO">INFO</option>
+                    <option value="WARNING">WARNING</option>
+                    <option value="ERROR">ERROR</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Logger</label>
+                <select id="filter-logger">
+                    <option value="">All Loggers</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Date From</label>
+                <input type="date" id="filter-date-from">
+            </div>
+            <div class="filter-group">
+                <label>Date To</label>
+                <input type="date" id="filter-date-to">
+            </div>
+            <div class="filter-group">
+                <label>Search Message</label>
+                <input type="text" id="filter-search" placeholder="Search in messages...">
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" onclick="refreshLogs()">🔄 Refresh</button>
+            <button class="btn btn-secondary" onclick="clearFilters()">🗑️ Clear Filters</button>
+            <button class="btn btn-success" onclick="exportCSV()">📥 Export CSV</button>
+            <button class="btn btn-success" onclick="exportJSON()">📥 Export JSON</button>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-wrapper">
+                <h3>Log Levels Distribution</h3>
+                <canvas id="chart-levels"></canvas>
+            </div>
+            <div class="chart-wrapper">
+                <h3>Logs Over Time (by Hour)</h3>
+                <canvas id="chart-time"></canvas>
+            </div>
+            <div class="chart-wrapper">
+                <h3>Logger Distribution</h3>
+                <canvas id="chart-loggers"></canvas>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div id="loading" class="loading">Loading logs...</div>
+            <div id="empty-state" class="empty-state" style="display: none;">
+                <h3>No logs found</h3>
+                <p>Try adjusting your filters or refresh the page.</p>
+            </div>
+            <table id="logs-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable('timestamp')">Timestamp</th>
+                        <th onclick="sortTable('level')">Level</th>
+                        <th onclick="sortTable('logger')">Logger</th>
+                        <th onclick="sortTable('message')">Message</th>
+                    </tr>
+                </thead>
+                <tbody id="logs-tbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let allLogs = [];
+        let filteredLogs = [];
+        let sortColumn = 'timestamp';
+        let sortDirection = 'desc';
+        let charts = {};
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setupFilters();
+            loadLogs();
+        });
+
+        function setupFilters() {
+            document.getElementById('filter-level').addEventListener('change', applyFilters);
+            document.getElementById('filter-logger').addEventListener('change', applyFilters);
+            document.getElementById('filter-date-from').addEventListener('change', applyFilters);
+            document.getElementById('filter-date-to').addEventListener('change', applyFilters);
+            document.getElementById('filter-search').addEventListener('input', applyFilters);
+        }
+
+        async function loadLogs() {
+            try {
+                const response = await fetch('/api/logs');
+                const data = await response.json();
+                allLogs = data;
+                populateLoggerFilter();
+                applyFilters();
+            } catch (error) {
+                console.error('Error loading logs:', error);
+                document.getElementById('loading').textContent = 'Error loading logs. Please refresh.';
+            }
+        }
+
+        function populateLoggerFilter() {
+            const loggerSelect = document.getElementById('filter-logger');
+            const loggers = [...new Set(allLogs.map(log => log.logger))].sort();
+            
+            // Clear existing options except "All Loggers"
+            loggerSelect.innerHTML = '<option value="">All Loggers</option>';
+            
+            loggers.forEach(logger => {
+                const option = document.createElement('option');
+                option.value = logger;
+                option.textContent = logger;
+                loggerSelect.appendChild(option);
+            });
+        }
+
+        function applyFilters() {
+            const levelFilter = document.getElementById('filter-level').value;
+            const loggerFilter = document.getElementById('filter-logger').value;
+            const dateFrom = document.getElementById('filter-date-from').value;
+            const dateTo = document.getElementById('filter-date-to').value;
+            const searchFilter = document.getElementById('filter-search').value.toLowerCase();
+
+            filteredLogs = allLogs.filter(log => {
+                if (levelFilter && log.level !== levelFilter) return false;
+                if (loggerFilter && log.logger !== loggerFilter) return false;
+                if (dateFrom && log.timestamp < dateFrom) return false;
+                if (dateTo && log.timestamp > dateTo + ' 23:59:59') return false;
+                if (searchFilter && !log.message.toLowerCase().includes(searchFilter)) return false;
+                return true;
+            });
+
+            updateStats();
+            updateCharts();
+            renderTable();
+        }
+
+        function clearFilters() {
+            document.getElementById('filter-level').value = '';
+            document.getElementById('filter-logger').value = '';
+            document.getElementById('filter-date-from').value = '';
+            document.getElementById('filter-date-to').value = '';
+            document.getElementById('filter-search').value = '';
+            applyFilters();
+        }
+
+        function updateStats() {
+            const total = filteredLogs.length;
+            const info = filteredLogs.filter(l => l.level === 'INFO').length;
+            const warning = filteredLogs.filter(l => l.level === 'WARNING').length;
+            const error = filteredLogs.filter(l => l.level === 'ERROR').length;
+
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-info').textContent = info;
+            document.getElementById('stat-warning').textContent = warning;
+            document.getElementById('stat-error').textContent = error;
+        }
+
+        function updateCharts() {
+            updateLevelsChart();
+            updateTimeChart();
+            updateLoggersChart();
+        }
+
+        function updateLevelsChart() {
+            const ctx = document.getElementById('chart-levels').getContext('2d');
+            const levels = ['INFO', 'WARNING', 'ERROR'];
+            const counts = levels.map(level => 
+                filteredLogs.filter(l => l.level === level).length
+            );
+
+            if (charts.levels) {
+                charts.levels.destroy();
+            }
+
+            charts.levels = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: levels,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: ['#2196F3', '#FF9800', '#F44336']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true
+                }
+            });
+        }
+
+        function updateTimeChart() {
+            const ctx = document.getElementById('chart-time').getContext('2d');
+            
+            // Group by hour
+            const hourCounts = {};
+            filteredLogs.forEach(log => {
+                if (log.timestamp) {
+                    const hour = log.timestamp.substring(0, 13) + ':00:00';
+                    hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+                }
+            });
+
+            const hours = Object.keys(hourCounts).sort();
+            const counts = hours.map(h => hourCounts[h]);
+
+            if (charts.time) {
+                charts.time.destroy();
+            }
+
+            charts.time = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: hours,
+                    datasets: [{
+                        label: 'Logs',
+                        data: counts,
+                        backgroundColor: '#667eea'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateLoggersChart() {
+            const ctx = document.getElementById('chart-loggers').getContext('2d');
+            
+            const loggerCounts = {};
+            filteredLogs.forEach(log => {
+                loggerCounts[log.logger] = (loggerCounts[log.logger] || 0) + 1;
+            });
+
+            const loggers = Object.keys(loggerCounts).sort((a, b) => 
+                loggerCounts[b] - loggerCounts[a]
+            ).slice(0, 10); // Top 10
+            const counts = loggers.map(l => loggerCounts[l]);
+
+            if (charts.loggers) {
+                charts.loggers.destroy();
+            }
+
+            charts.loggers = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: loggers,
+                    datasets: [{
+                        label: 'Log Count',
+                        data: counts,
+                        backgroundColor: '#764ba2'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function sortTable(column) {
+            if (sortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = column;
+                sortDirection = 'asc';
+            }
+
+            // Update header indicators
+            document.querySelectorAll('th').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+            });
+            const header = event.target;
+            header.classList.add(sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('logs-tbody');
+            const table = document.getElementById('logs-table');
+            const loading = document.getElementById('loading');
+            const emptyState = document.getElementById('empty-state');
+
+            // Sort logs
+            const sorted = [...filteredLogs].sort((a, b) => {
+                let aVal = a[sortColumn];
+                let bVal = b[sortColumn];
+
+                if (sortColumn === 'timestamp') {
+                    aVal = a.timestamp || '';
+                    bVal = b.timestamp || '';
+                }
+
+                if (sortDirection === 'asc') {
+                    return aVal > bVal ? 1 : -1;
+                } else {
+                    return aVal < bVal ? 1 : -1;
+                }
+            });
+
+            if (sorted.length === 0) {
+                loading.style.display = 'none';
+                table.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            loading.style.display = 'none';
+            emptyState.style.display = 'none';
+            table.style.display = 'table';
+
+            tbody.innerHTML = sorted.map(log => `
+                <tr>
+                    <td>${log.timestamp || ''}</td>
+                    <td><span class="log-level ${log.level}">${log.level}</span></td>
+                    <td><span class="logger-name">${log.logger}</span></td>
+                    <td class="message">${escapeHtml(log.message)}</td>
+                </tr>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function refreshLogs() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('logs-table').style.display = 'none';
+            loadLogs();
+        }
+
+        function exportCSV() {
+            const headers = ['Timestamp', 'Level', 'Logger', 'Message'];
+            const rows = filteredLogs.map(log => [
+                log.timestamp || '',
+                log.level,
+                log.logger,
+                `"${log.message.replace(/"/g, '""')}"`
+            ]);
+
+            const csv = [
+                headers.join(','),
+                ...rows.map(row => row.join(','))
+            ].join('\n');
+
+            downloadFile(csv, 'logs.csv', 'text/csv');
+        }
+
+        function exportJSON() {
+            const json = JSON.stringify(filteredLogs, null, 2);
+            downloadFile(json, 'logs.json', 'application/json');
+        }
+
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

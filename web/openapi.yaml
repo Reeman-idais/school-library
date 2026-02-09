@@ -1,0 +1,119 @@
+openapi: 3.0.3
+info:
+  title: School Library API
+  description: Electronic Library Management System - REST API for logs and CLI execution.
+  version: 1.0.0
+
+servers:
+  - url: /
+    description: Default server
+
+paths:
+  /api/logs:
+    get:
+      summary: Get log entries
+      operationId: getLogs
+      tags: [Logs]
+      responses:
+        '200':
+          description: List of log entries (NDJSON or legacy format)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    timestamp: { type: string }
+                    datetime: { type: string, nullable: true }
+                    logger: { type: string }
+                    level: { type: string, enum: [INFO, WARNING, ERROR] }
+                    message: { type: string }
+  /v1/api/logs:
+    get:
+      summary: Get log entries (v1)
+      operationId: getLogsV1
+      tags: [Logs]
+      responses:
+        '200':
+          description: List of log entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LogEntry'
+
+  /api/execute:
+    post:
+      summary: Execute a CLI command
+      operationId: executeCommand
+      tags: [Execute]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecuteRequest'
+      responses:
+        '200':
+          description: Command result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecuteResponse'
+        '400':
+          description: Bad request (invalid command or args)
+        '500':
+          description: Server or execution error
+  /v1/api/execute:
+    post:
+      summary: Execute a CLI command (v1)
+      operationId: executeCommandV1
+      tags: [Execute]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecuteRequest'
+      responses:
+        '200':
+          description: Command result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecuteResponse'
+        '400':
+          description: Bad request
+        '500':
+          description: Server error
+
+components:
+  schemas:
+    LogEntry:
+      type: object
+      properties:
+        timestamp: { type: string }
+        datetime: { type: string, nullable: true }
+        logger: { type: string }
+        level: { type: string }
+        message: { type: string }
+    ExecuteRequest:
+      type: object
+      required: [command, args]
+      properties:
+        command:
+          type: string
+          enum: [add-book, delete-book, update-book, search, borrow, return, list-available, register-user]
+        args:
+          type: array
+          items: { type: string }
+    ExecuteResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        stdout: { type: string }
+        stderr: { type: string }
+        exit_code: { type: integer }
+        error: { type: string, description: "Present when success is false" }

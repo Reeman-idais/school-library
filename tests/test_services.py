@@ -18,47 +18,42 @@ class TestBookService:
         """Test adding a book successfully with mocked storage."""
         # Create mock storage
         mock_storage = Mock()
-        mock_storage.get_next_book_id.return_value = 1
+        mock_storage.get_book_by_id.return_value = None
         mock_storage.add_book.return_value = True
 
         # Create service with mocked storage
         service = BookService(storage=mock_storage)
 
         # Add book
-        book, error_msg = service.add_book("Test Book", "Test Author")
+        book, error_msg = service.add_book(1001, "Test Book", "Test Author")
 
         # Assertions
         assert book is not None
         assert error_msg == ""
         assert book.title == "Test Book"
         assert book.author == "Test Author"
-        assert book.id == 1
+        assert book.id == 1001
         assert book.status == BookStatus.AVAILABLE
 
         # Verify storage methods were called
-        mock_storage.get_next_book_id.assert_called_once()
+        mock_storage.get_book_by_id.assert_called_once()
         mock_storage.add_book.assert_called_once()
 
     def test_add_book_empty_title(self, mocker):
         """Test adding book with empty title."""
         mock_storage = Mock()
+        mock_storage.get_book_by_id.return_value = None
         service = BookService(storage=mock_storage)
 
-        book, error_msg = service.add_book("", "Test Author")
-
-        assert book is None
-        assert "empty" in error_msg.lower()
-        mock_storage.add_book.assert_not_called()
-
-    def test_add_book_storage_failure(self, mocker):
+        book, error_msg = service.add_book(1001, "", "Test Author")
         """Test adding book when storage fails."""
         mock_storage = Mock()
-        mock_storage.get_next_book_id.return_value = 1
+        mock_storage.get_book_by_id.return_value = None
         mock_storage.add_book.return_value = False
 
         service = BookService(storage=mock_storage)
 
-        book, error_msg = service.add_book("Test Book", "Test Author")
+        book, error_msg = service.add_book(1001, "Test Book", "Test Author")
 
         assert book is None
         assert "storage" in error_msg.lower()

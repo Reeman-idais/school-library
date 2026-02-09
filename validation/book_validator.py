@@ -9,6 +9,7 @@ def validate_book_data(
     book_id: Optional[str] = None,
     title: Optional[str] = None,
     author: Optional[str] = None,
+    isbn: Optional[str] = None,
 ) -> Tuple[bool, str]:
     """
     Validate book data fields.
@@ -17,6 +18,7 @@ def validate_book_data(
         book_id: Book internal ID (optional, validated if provided)
         title: Book title (optional, validated if provided)
         author: Book author (optional, validated if provided)
+        isbn: ISBN (optional, validated if provided)
 
     Returns:
         Tuple of (is_valid, error_message)
@@ -41,6 +43,12 @@ def validate_book_data(
         if not author:
             return False, "Author cannot be empty"
 
+    # Validate ISBN if provided
+    if isbn is not None and isbn.strip():
+        is_valid, error_msg = validate_id(isbn.strip())
+        if not is_valid:
+            return False, f"Invalid ISBN: {error_msg}"
+
     return True, ""
 
 
@@ -48,6 +56,7 @@ def validate_book_for_creation(
     book_id: Optional[str],
     title: str,
     author: str,
+    isbn: Optional[str] = None,
 ) -> Tuple[bool, str]:
     """
     Validate all required fields for book creation.
@@ -56,17 +65,19 @@ def validate_book_for_creation(
         book_id: Optional book ID (if you allow client to pass)
         title: Book title
         author: Book author
+        isbn: ISBN (optional)
 
     Returns:
         Tuple of (is_valid, error_message)
     """
-    return validate_book_data(book_id=book_id, title=title, author=author)
+    return validate_book_data(book_id=book_id, title=title, author=author, isbn=isbn)
 
 
 def validate_book_for_update(
     book_id: Optional[str] = None,
     title: Optional[str] = None,
     author: Optional[str] = None,
+    isbn: Optional[str] = None,
 ) -> Tuple[bool, str]:
     """
     Validate fields for book update (all fields optional).
@@ -75,6 +86,7 @@ def validate_book_for_update(
         book_id: Optional book ID
         title: Book title (optional)
         author: Book author (optional)
+        isbn: ISBN (optional)
 
     Returns:
         Tuple of (is_valid, error_message)

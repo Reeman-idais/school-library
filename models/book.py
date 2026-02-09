@@ -24,16 +24,20 @@ class Book:
     title: str
     author: str
     status: BookStatus
+    isbn: Optional[str] = None  # ISBN (optional)
     picked_by: Optional[str] = None  # Username who picked the book
 
     @classmethod
-    def create(cls, book_id: int, title: str, author: str) -> "Book":
+    def create(
+        cls, book_id: int, title: str, author: str, isbn: Optional[str] = None
+    ) -> "Book":
         """Create a new book with specified ID and AVAILABLE status."""
         return cls(
             id=book_id,
             title=title.strip(),
             author=author.strip(),
             status=BookStatus.AVAILABLE,
+            isbn=isbn.strip() if isbn else None,
             picked_by=None,
         )
 
@@ -45,6 +49,8 @@ class Book:
             "author": self.author,
             "status": self.status.value,
         }
+        if self.isbn:
+            result["isbn"] = self.isbn
         if self.picked_by:
             result["picked_by"] = self.picked_by
         return result
