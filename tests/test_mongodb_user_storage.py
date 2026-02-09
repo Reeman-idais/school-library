@@ -4,7 +4,6 @@ import pytest
 
 from models.role import Role
 from models.user import User
-from storage.mongodb.user_storage import MongoDBUserStorage
 
 
 @pytest.mark.integration
@@ -145,5 +144,5 @@ class TestMongoDBUserStorage:
         user2 = User(id=2, username="alice", role=Role.USER)
 
         assert mongodb_user_storage.add_user(user1) is True
-        # Note: MongoDB should prevent this, but we'll just verify it doesn't break
-        # In production MongoDB would raise a duplicate key error
+        # Attempt to add a second user with the same username (should be rejected)
+        assert mongodb_user_storage.add_user(user2) is False

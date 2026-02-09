@@ -1,7 +1,6 @@
 """Storage factory for creating appropriate storage implementation."""
 
 import os
-from typing import Union
 
 from lib_logging.logger import get_logger
 

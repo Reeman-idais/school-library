@@ -3,7 +3,6 @@
 import pytest
 
 from models.book import Book, BookStatus
-from storage.mongodb.book_storage import MongoDBBookStorage
 
 
 @pytest.mark.integration

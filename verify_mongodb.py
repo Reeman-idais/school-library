@@ -18,27 +18,27 @@ def test_imports():
     """Test that all modules can be imported."""
     print("\n✓ Testing imports...")
     try:
-        from config.database import MongoDBConfig, MongoDBConnection
+        from config.database import MongoDBConfig, MongoDBConnection  # noqa: F401
 
         print("  ✓ config.database imported successfully")
 
-        from storage.factory import StorageFactory
+        from storage.factory import StorageFactory  # noqa: F401
 
         print("  ✓ storage.factory imported successfully")
 
-        from storage.mongodb.book_storage import MongoDBBookStorage
+        from storage.mongodb.book_storage import MongoDBBookStorage  # noqa: F401
 
         print("  ✓ storage.mongodb.book_storage imported successfully")
 
-        from storage.mongodb.user_storage import MongoDBUserStorage
+        from storage.mongodb.user_storage import MongoDBUserStorage  # noqa: F401
 
         print("  ✓ storage.mongodb.user_storage imported successfully")
 
-        from models.book import Book, BookStatus
+        from models.book import Book, BookStatus  # noqa: F401
 
         print("  ✓ models.book imported successfully")
 
-        from models.user import User
+        from models.user import User  # noqa: F401
 
         print("  ✓ models.user imported successfully")
 
@@ -57,7 +57,7 @@ def test_factory_pattern():
         # Test with JSON storage
         os.environ["DATABASE_TYPE"] = "json"
         StorageFactory.reset()
-        json_storage = StorageFactory.create_book_storage()
+        StorageFactory.create_book_storage()
         print("  ✓ Factory creates JSON storage successfully")
 
         # Test with MongoDB type (without connecting)
@@ -174,11 +174,11 @@ def test_dependencies():
 
         import dotenv
 
-        print(f"  ✓ python-dotenv is installed")
+        print(f"  ✓ python-dotenv ({dotenv.__name__}) is installed")
 
         import pytest
 
-        print(f"  ✓ pytest is installed")
+        print(f"  ✓ pytest {pytest.__version__} is installed")
 
         return True
     except ImportError as e:

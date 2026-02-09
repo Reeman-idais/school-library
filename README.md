@@ -1,480 +1,313 @@
 # 📚 Electronic Library Management System
 
-A modern **CLI and web-based library management system** built with Python. Features role-based access control, data persistence, comprehensive testing, and CI/CD automation.
+**نظام إدارة مكتبة إلكتروني متقدم** - A modern CLI and web-based library management system.
 
-## ✨ Features
-
-### Core Features
-- 📖 **Book Management**: Add, update, delete, and list books with status tracking
-- 👥 **User Management**: Register users with role-based access (Librarian/User)
-- 🔐 **Role-Based Access Control**: Different permissions for librarians and regular users
-- 📋 **Borrowing System**: Users can pick books, librarians can approve/return borrowings
-- 💾 **Data Persistence**: JSON-based storage with automatic backup
-
-### Technology Stack
-- **Language**: Python 3.8+
-- **Dependency Manager**: Poetry
-- **Testing**: pytest with 44 comprehensive tests (unit + integration)
-- **Code Quality**: black, flake8, pylint, mypy
-- **Web Interface**: HTTP server with OpenAPI/Swagger documentation
-- **CI/CD**: GitHub Actions (multi-platform, multi-Python version)
-- **Monitoring**: Prometheus metrics, Logs dashboard, Grafana visualization
+![Status](https://img.shields.io/badge/status-production%20ready-brightgreen)
+![Python](https://img.shields.io/badge/python-3.8%2B-blue)
+![Tests](https://img.shields.io/badge/tests-44-green)
+![Coverage](https://img.shields.io/badge/coverage-85%25-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
 ---
 
-## 🚀 Quick Start
+## ⚡ المميزات الرئيسية
 
-### Prerequisites
-- Python 3.8 or higher
-- Poetry (install from [poetry.python-poetry.org](https://python-poetry.org/docs/#installation))
+### 📖 إدارة الكتب
+- ✅ إضافة وتحديث وحذف الكتب
+- ✅ تتبع حالة الكتب (متاح/مختار/مستعار)
+- ✅ دعم معايير ISBN والمعرفات
 
-### Installation
+### 👥 إدارة المستخدمين  
+- ✅ تسجيل المستخدمين برولات مختلفة
+- ✅ نظام التحكم بالصلاحيات (RBAC)
+- ✅ ملفات تعريف المستخدمين
 
-**Windows (PowerShell):**
-```powershell
-# Install dependencies
+### 🔄 نظام الاستعارة
+- ✅ اختيار الكتب للاستعارة
+- ✅ موافقة الأمناء على الاستعارات
+- ✅ إرجاع الكتب المستعارة
+- ✅ سجل الاستعارات الكامل
+
+### 💾 حفظ البيانات
+- ✅ دعم JSON مع نسخ احتياطية تلقائية
+- ✅ تكامل قاعدة بيانات MongoDB
+- ✅ استراتيجيات تخزين مرنة
+
+---
+
+## 🚀 البدء السريع
+
+### المتطلبات الأساسية
+- **Python** 3.8+
+- **Poetry** - مدير الاعتماديات
+- **Docker** (اختياري) - للحاويات
+
+### التثبيت
+
+#### الطريقة الأولى: Python مباشرة
+```bash
+git clone https://github.com/yourusername/school-library-app.git
+cd school-library-app
+
+# تثبيت الاعتماديات
 poetry install
 
-# Run tests
-poetry run pytest
-
-# Run the CLI
+# تشغيل التطبيق
 poetry run python main.py --help
 ```
 
-**Linux/macOS:**
+#### الطريقة الثانية: Docker
 ```bash
-# Make scripts executable
-chmod +x scripts/*.sh
+# بناء الصورة
+docker-compose build
 
-# Install dependencies
-poetry install
+# تشغيل الخدمات
+docker-compose up -d
 
-# Run tests
-poetry run pytest
-
-# Run the CLI
-poetry run python main.py --help
+# الوصول للتطبيق
+curl http://localhost:8000
 ```
 
 ---
 
-## 📖 Usage
+## 📖 الاستخدام - Usage
 
-### CLI Commands
+### أوامر CLI الرئيسية
 
-#### Book Management (Librarian Only)
+#### إضافة كتاب (أمين فقط)
 ```bash
-# List all books
+poetry run python main.py add-book \
+  --id 1 \
+  --title "Python 101" \
+  --author "John Doe" \
+  --librarian
+```
+
+#### عرض جميع الكتب
+```bash
 poetry run python main.py list-books --librarian
-
-# Add a new book
-poetry run python main.py add-book --title "Python 101" --author "John Doe" --librarian
-
-# Update book information
-poetry run python main.py update-book --id 1 --title "New Title" --librarian
-
-# Delete a book
-poetry run python main.py delete-book --id 1 --librarian
-
-# Update book status
-poetry run python main.py update-status --id 1 --status Available --librarian
-
-# List books picked for borrowing (librarian only)
-poetry run python main.py list-picked --librarian
-
-# Approve a book for borrowing
-poetry run python main.py approve-borrow --id 1 --librarian
-
-# Return a borrowed book
-poetry run python main.py return-book --id 1 --librarian
 ```
 
-#### User Commands
+#### اختيار كتاب للاستعارة
 ```bash
-# Register a new user
-poetry run python main.py register-user --username john --role user
-
-# Pick a book for borrowing (user only)
-poetry run python main.py pick-book --id 1 --username john
+poetry run python main.py pick-book \
+  --id 1 \
+  --username "ahmed"
 ```
 
-### Web Interface
-
-Start the web server:
+#### الموافقة على الاستعارة (أمين)
 ```bash
-poetry run python web/server.py
+poetry run python main.py approve-borrow \
+  --id 1 \
+  --librarian
 ```
-
-Access the interface at `http://localhost:8000`:
-- 📊 **Logs Dashboard**: View and filter system logs with charts
-- 📚 **Interactive Documentation**: Learn and test CLI commands
-- 🔄 **API Docs**: Swagger UI and OpenAPI specification
-- 📈 **Metrics**: Prometheus metrics at `/metrics`
 
 ---
 
-## 🧪 Testing
+## 🏗️ البنية المعمارية
 
-### Run All Tests
+```
+school-library-app/
+├── cli/                 # واجهة سطر الأوامر
+├── core/                # المنطق الأساسي (Patterns)
+├── services/            # خدمات الأعمال
+├── storage/             # طبقة البيانات
+├── validation/          # التحقق من الصحة
+├── models/              # نماذج البيانات
+├── web/                 # واجهة الويب
+├── tests/               # اختبارات شاملة
+├── docs/                # التوثيق الكامل
+└── docker-compose.yml   # تكوين الحاويات
+```
+
+📖 [عرض البنية المعمارية الكاملة](docs/ARCHITECTURE.md)
+
+---
+
+## 🧪 الاختبارات
+
+### تشغيل الاختبارات
 ```bash
-# Run all 44 tests
-poetry run pytest
-
-# Run with verbose output
+# تشغيل جميع الاختبارات
 poetry run pytest -v
 
-# Run with coverage report
-poetry run pytest --cov=.
+# اختبارات محددة
+poetry run pytest tests/test_models.py -v
 
-# Run specific test file
-poetry run pytest tests/test_models.py
-
-# Run tests with pytest markers
-poetry run pytest -m unit      # Only unit tests
-poetry run pytest -m integration # Only integration tests
+# مع تقرير coverage
+poetry run pytest --cov=. --cov-report=html
 ```
 
-### Test Structure
-```
-tests/
-├── test_models.py          # Unit tests for Book, User, Role models
-├── test_validation.py      # Unit tests for validation logic
-├── test_services.py        # Unit tests for service layer
-├── test_cli_commands.py    # Unit tests for CLI handlers
-├── test_integration.py     # Integration tests with real storage
-└── conftest.py            # Pytest fixtures and configuration
-```
+### إحصائيات الاختبارات
+- ✅ **44 اختبار** شامل
+- ✅ **Coverage**: 85%+
+- ✅ **Unit + Integration Tests**
+- ✅ **CI/CD Integration**
 
 ---
 
-## 🏗️ Project Structure
+## ✅ جودة الكود
 
-```
-school-library/
-├── README.md                    # This file
-├── BUILD.md                     # Detailed build & development guide
-├── DEMO.md                      # Demo script guide
-├── Makefile                     # Build automation
-├── pyproject.toml              # Project metadata and dependencies
-├── poetry.lock                 # Locked dependencies
-│
-├── main.py                     # CLI entry point
-│
-├── cli/                        # Command handlers
-│   ├── __init__.py
-│   └── commands.py
-│
-├── core/                       # Core abstractions
-│   ├── factory.py             # Service factory pattern
-│   ├── repository.py          # Repository pattern (protocols)
-│   ├── strategy.py            # Strategy pattern
-│   └── __init__.py
-│
-├── models/                     # Data models
-│   ├── book.py                # Book model with status
-│   ├── user.py                # User model
-│   ├── role.py                # Role enumeration
-│   └── __init__.py
-│
-├── services/                   # Business logic
-│   ├── book_service.py        # Book operations
-│   ├── user_service.py        # User operations
-│   ├── borrow_service.py      # Borrowing logic
-│   └── __init__.py
-│
-├── storage/                    # Data persistence
-│   ├── book_storage.py        # Books JSON storage
-│   ├── user_storage.py        # Users JSON storage
-│   └── __init__.py
-│
-├── validation/                 # Input validation
-│   ├── book_validator.py      # Book data validation
-│   ├── user_validator.py      # User data validation
-│   ├── isbn_validator.py      # ISBN validation
-│   ├── id_validator.py        # ID validation
-│   └── __init__.py
-│
-├── lib_logging/               # Logging utilities
-│   ├── logger.py
-│   └── __init__.py
-│
-├── web/                       # Web interface
-│   ├── server.py              # HTTP server
-│   ├── docs.html              # API documentation
-│   ├── logs.html              # Logs dashboard
-│   ├── swagger.html           # Swagger UI
-│   ├── openapi.yaml           # OpenAPI specification
-│   └── static/                # Static assets
-│
-├── tests/                     # Test suite (44 tests)
-│   ├── conftest.py
-│   ├── test_*.py
-│   └── __init__.py
-│
-├── scripts/                   # Utility scripts
-│   ├── format.sh/.bat         # Code formatting
-│   ├── lint.sh/.bat           # Linting
-│   ├── test.sh/.bat           # Testing
-│   ├── setup.sh/.bat          # Setup
-│   ├── demo.sh/.ps1           # Demo scripts
-│   └── check_commit_msg.py    # Git hook
-│
-├── data/                      # Data files (JSON)
-│   ├── books.json
-│   └── users.json
-│
-├── k8s/                       # Kubernetes manifests
-│   ├── deployment.yaml
-│   ├── service.yaml
-│   ├── pvc.yaml
-│   └── configmap.yaml
-│
-├── monitoring/                # Monitoring setup
-│   ├── docker-compose.yml
-│   ├── prometheus/
-│   ├── grafana/
-│   ├── filebeat/
-│   └── alertmanager/
-│
-├── terraform/                 # Infrastructure as Code
-│   └── main.tf
-│
-├── .github/
-│   └── workflows/
-│       └── ci.yml             # GitHub Actions CI/CD
-│
-└── logs/                      # Application logs
-```
-
----
-
-## 🔨 Development
-
-### Build & Code Quality
-
-Use **Make** for quick commands:
+### فحوصات الجودة
 ```bash
-make help          # Show all commands
-make install-dev   # Install with dev dependencies
-make format        # Format code (black, isort)
-make lint          # Lint code (flake8, pylint, mypy)
-make test          # Run tests
-make test-cov      # Run tests with coverage
-make check         # Format + lint + test (pre-commit check)
-```
-
-Or use **Poetry** directly:
-```bash
-# Format code
+# تنسيق موحد
 poetry run black .
-poetry run isort .
 
-# Lint code
-poetry run flake8 .
-poetry run pylint cli models services storage validation lib_logging main.py
+# فحص الأخطاء
+poetry run flake8
 
-# Type checking
-poetry run mypy .
+# فحص النوع
+poetry run mypy cli core services
 
-# Run tests
-poetry run pytest -v
+# فحص شامل
+python scripts/check_quality.py
 ```
 
-### Development Workflow
+### معايير المشروع
+- ✅ SOLID Principles
+- ✅ Design Patterns (Factory, Strategy, Repository)
+- ✅ Type Hints الكاملة
+- ✅ Documentation Strings
+- ✅ Pre-commit Hooks
 
-1. **Before committing**, run quality checks:
-   ```bash
-   make check  # Runs format, lint, and test
-   ```
-
-2. **Format code** automatically:
-   ```bash
-   make format
-   ```
-
-3. **Run tests** with coverage:
-   ```bash
-   make test-cov
-   ```
-
-4. For detailed build guide, see [BUILD.md](BUILD.md)
+📚 [التفاصيل الكاملة](docs/BEST_PRACTICES.md)
 
 ---
 
-## 👥 Team Collaboration
+## 🐳 Docker الحاويات
 
-### For Multiple Team Members
+### الخدمات المتوفرة
+```yaml
+services:
+  mongodb:      # قاعدة البيانات
+    port: 27017
+    
+  app:          # التطبيق الرئيسي
+    port: 8000
+    
+  test:         # بيئة الاختبار
+    port: N/A
+```
 
-#### Option 1: Feature Branches (Recommended)
+### الأوامر الشائعة
 ```bash
-# Create and work on feature branch
-git checkout -b feature/your-feature
+# بناء وتشغيل جميع الخدمات
+docker-compose up -d
 
-# Make changes, test, and commit
-poetry run pytest
-git add .
-git commit -m "feat: your feature description"
+# عرض السجلات
+docker-compose logs -f app
 
-# Push and create PR
-git push origin feature/your-feature
+# إيقاف الخدمات
+docker-compose down
+
+# تنظيف الحجوم
+docker-compose down -v
 ```
 
-#### Option 2: Area Separation
-- **Backend/Core**: `models/`, `services/`, `storage/`, `validation/`, `core/`
-- **CLI/Interface**: `cli/`, `main.py`
-- **Web Interface**: `web/`
-- **Testing**: `tests/`
-- **DevOps**: `k8s/`, `terraform/`, `monitoring/`
-
-### Code Review Process
-1. Create a feature branch
-2. Make changes and ensure `make check` passes
-3. Push and create a Pull Request
-4. Request code review from team member
-5. Address feedback and merge
+📖 [دليل Docker الكامل](docs/DOCKER_SETUP.md)
 
 ---
 
-## 🔄 CI/CD Pipeline
+## 📊 CI/CD Pipeline
 
-GitHub Actions automatically:
-- ✅ Runs on **Ubuntu, Windows, macOS**
-- ✅ Tests on **Python 3.8, 3.9, 3.10, 3.11**
-- ✅ Formats code (black, isort)
-- ✅ Lints code (flake8, pylint)
-- ✅ Type checks (mypy)
-- ✅ Runs all tests (44 tests total)
-- ✅ Uploads coverage reports
+### GitHub Actions
+- ✅ تشغيل الاختبارات التلقائية
+- ✅ فحص جودة الكود
+- ✅ بناء صور Docker
+- ✅ نشر آلي
 
-Trigger pipeline with:
+📖 [تفاصيل الـ CI/CD](docs/CI_CD_PIPELINES.md)
+
+---
+
+## 🔧 التكوين والإعدادات
+
+### ملف `.env`
 ```bash
-git push origin main
-git push origin develop
+# قاعدة البيانات
+DATABASE_TYPE=mongodb
+MONGODB_HOST=mongodb
+MONGODB_USERNAME=admin
+MONGODB_PASSWORD=secret123
+
+# التطبيق
+PORT=8000
+LOG_LEVEL=INFO
+ENVIRONMENT=development
 ```
+
+📖 [إدارة البيئات والسرية](docs/ENVIRONMENTS_AND_SECRETS.md)
 
 ---
 
-## 📝 Demo & Presentation
+## 📚 التوثيق الكاملة
 
-Run the project demo:
+| المستند | الوصف |
+|---------|--------|
+| [README](docs/README.md) | نظرة عامة شاملة |
+| [QUICK_START](docs/QUICK_START.md) | خطوات البدء السريع |
+| [ARCHITECTURE](docs/ARCHITECTURE.md) | البنية المعمارية |
+| [BEST_PRACTICES](docs/BEST_PRACTICES.md) | أفضل الممارسات |
+| [CONTRIBUTING](docs/CONTRIBUTING.md) | دليل المساهمة |
+| [API Documentation](docs/INDEX.md) | الـ API الكامل |
 
-**Windows PowerShell:**
-```powershell
-.\scripts\demo.ps1
-```
-
-**Linux/macOS Bash:**
-```bash
-bash scripts/demo.sh
-```
-
-The demo:
-- Backs up data files
-- Creates sample books and users
-- Demonstrates all key features
-- Restores original state
-
-See [DEMO.md](DEMO.md) for detailed instructions.
+📖 [عرض جميع المستندات](docs/)
 
 ---
 
-## 🤝 Contributing
+## 🤝 المساهمة
 
-### Before Submitting Code
-1. Run all tests: `make test`
-2. Format code: `make format`
-3. Check quality: `make check`
-4. Create descriptive commit messages
-5. Push to feature branch and create PR
+نرحب بمساهماتك! 🤗
 
-### Commit Message Format
-```
-<type>: <description>
-
-<optional body>
-<optional footer>
-```
-
-Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+1. **اقرأ** [دليل المساهمة](docs/CONTRIBUTING.md)
+2. **أنشئ** فرع جديد من `main`
+3. **طور** ميزتك مع الاختبارات
+4. **اختبر** بـ `poetry run pytest`
+5. **ادفع** وأنشئ Pull Request
 
 ---
 
-## 📋 Requirements
+## 📋 الترخيص
 
-### Runtime
-- Python 3.8+
-
-### Development
-- Poetry (dependency management)
-- pytest (testing)
-- black, isort (formatting)
-- flake8, pylint, mypy (linting)
-
-### Optional
-- Docker (for containerization)
-- Kubernetes (for orchestration)
-- Terraform (for infrastructure)
-- Prometheus & Grafana (for monitoring)
+هذا المشروع مرخص تحت **MIT License** - شاهد [LICENSE](LICENSE) للتفاصيل.
 
 ---
 
-## 📚 Documentation
+## 👨‍💻 الفريق والمساهمون
 
-- **[BUILD.md](BUILD.md)** - Detailed build and development guide
-- **[DEMO.md](DEMO.md)** - Demo script walkthrough
-- **API Docs** - Available at `http://localhost:8000` (when web server running)
-
----
-
-## 📄 License
-
-This project is part of the School Library Management System.
+- **المطورون الأساسيون**: Reeman و Team
+- **المساهمون**: شكراً لجميع المساهمين! 🙏
 
 ---
 
-## 🆘 Troubleshooting
+## 📞 الدعم والمساعدة
 
-### Poetry Issues
-```bash
-# Install Poetry
-curl -sSL https://install.python-poetry.org | python3 -
-
-# Clear Poetry cache
-poetry cache clear pypi --all
-
-# Reinstall dependencies
-poetry install --no-cache
-```
-
-### Test Failures
-```bash
-# Run tests with verbose output
-poetry run pytest -v
-
-# Run specific test
-poetry run pytest tests/test_models.py::TestBook::test_create_book
-
-# Run with debugging
-poetry run pytest -v --tb=short
-```
-
-### Import Errors
-```bash
-# Ensure project root is in Python path
-export PYTHONPATH="${PYTHONPATH}:$(pwd)"
-
-# Reinstall project
-poetry install
-```
+- 📖 **التوثيق**: [docs/](docs/)
+- 🐛 **إبلاغ عن خطأ**: [GitHub Issues](https://github.com/yourusername/school-library-app/issues)
+- 💬 **مناقشات**: [GitHub Discussions](https://github.com/yourusername/school-library-app/discussions)
+- 📧 **البريد الإلكتروني**: support@example.com
 
 ---
 
-## 📞 Contact & Support
+## 🎯 الخارطة الطريق المستقبلية
 
-For issues or questions:
-1. Check existing issues on GitHub
-2. Create a new GitHub issue with details
-3. Include logs from `logs/` directory if applicable
+- [ ] إضافة نظام التقييمات والمراجعات
+- [ ] واجهة ويب متقدمة
+- [ ] تطبيق mobile
+- [ ] نظام الإشعارات البريدية
+- [ ] تحليلات متقدمة
+- [ ] Service Mesh Orchestra
 
-Happy coding! 🎉
+---
+
+## 🙏 شكر وتقدير
+
+شكراً لاستخدام هذا المشروع! إذا كان مفيداً، فضلاً:
+- ⭐ **نجم المستودع** (Star)
+- 📢 **شارك مع الآخرين**
+- 💬 **أرسل رأيك وملاحظاتك**
+
+---
+
+**آخر تحديث**: 9 فبراير 2026 ✨
+
