@@ -3,23 +3,23 @@
 import argparse
 import sys
 
-from core.factory import ServiceFactory
 from cli.commands import (
     handle_add_book,
+    handle_approve_borrow,
     handle_delete_book,
+    handle_list_books,
+    handle_list_picked,
+    handle_pick_book,
+    handle_register_user,
+    handle_return_book,
     handle_update_book,
     handle_update_status,
-    handle_list_books,
-    handle_pick_book,
-    handle_list_picked,
-    handle_approve_borrow,
-    handle_return_book,
-    handle_register_user,
 )
+from core.factory import ServiceFactory
 
 
-def main():
-    """Main CLI entry point."""
+def create_parser() -> argparse.ArgumentParser:
+    """Create CLI parser with subcommands."""
     parser = argparse.ArgumentParser(
         description="Electronic Library Management System v1.0",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -27,7 +27,7 @@ def main():
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
-    # add-book command (librarian only)
+    # --- add-book ---
     add_book_parser = subparsers.add_parser(
         "add-book", help="Add a new book (librarian only)"
     )
@@ -37,7 +37,7 @@ def main():
         "--librarian", action="store_true", help="Login as librarian"
     )
 
-    # delete-book command (librarian only)
+    # --- delete-book ---
     delete_book_parser = subparsers.add_parser(
         "delete-book", help="Delete a book (librarian only)"
     )
@@ -48,9 +48,9 @@ def main():
         "--librarian", action="store_true", help="Login as librarian"
     )
 
-    # update-book command (librarian only)
+    # --- update-book ---
     update_book_parser = subparsers.add_parser(
-        "update-book", help="Update book information (librarian only)"
+        "update-book", help="Update book info (librarian only)"
     )
     update_book_parser.add_argument(
         "--id", required=True, dest="book_id", help="Book ID (integer)"
@@ -61,7 +61,7 @@ def main():
     update_book_parser.add_argument("--title", help="New title")
     update_book_parser.add_argument("--author", help="New author")
 
-    # update-status command (librarian only)
+    # --- update-status ---
     update_status_parser = subparsers.add_parser(
         "update-status", help="Update book status (librarian only)"
     )
@@ -78,7 +78,7 @@ def main():
         "--librarian", action="store_true", help="Login as librarian"
     )
 
-    # list-books command (librarian and user)
+    # --- list-books ---
     list_books_parser = subparsers.add_parser(
         "list-books", help="List all books with IDs and status"
     )
@@ -88,7 +88,7 @@ def main():
     )
     login_group.add_argument("--username", help="Username for user login")
 
-    # pick-book command (user only)
+    # --- pick-book ---
     pick_book_parser = subparsers.add_parser(
         "pick-book", help="Pick a book for borrowing (user only)"
     )
@@ -99,15 +99,15 @@ def main():
         "--username", required=True, help="Username to identify the user"
     )
 
-    # list-picked command (librarian only)
+    # --- list-picked ---
     list_picked_parser = subparsers.add_parser(
-        "list-picked", help="List picked books with user names (librarian only)"
+        "list-picked", help="List picked books (librarian only)"
     )
     list_picked_parser.add_argument(
         "--librarian", action="store_true", help="Login as librarian"
     )
 
-    # approve-borrow command (librarian only)
+    # --- approve-borrow ---
     approve_borrow_parser = subparsers.add_parser(
         "approve-borrow",
         help="Approve a picked book and change status to Borrowed (librarian only)",
@@ -119,7 +119,7 @@ def main():
         "--librarian", action="store_true", help="Login as librarian"
     )
 
-    # return-book command (librarian only)
+    # --- return-book ---
     return_book_parser = subparsers.add_parser(
         "return-book",
         help="Return a borrowed book to Available status (librarian only)",
@@ -131,62 +131,72 @@ def main():
         "--librarian", action="store_true", help="Login as librarian"
     )
 
-    # register-user command (no role restriction)
+    # --- register-user ---
     register_parser = subparsers.add_parser("register-user", help="Register a new user")
     register_parser.add_argument("--username", required=True, help="Username")
     register_parser.add_argument(
         "--role", required=True, choices=["librarian", "user"], help="User role"
     )
 
+    return parser
+
+
+def execute_command(args, book_service, user_service):
+    """Route to the appropriate CLI handler using a mapping."""
+    command_map = {
+        "add-book": lambda: handle_add_book(
+            args.title, args.author, args.librarian, None, book_service
+        ),
+        "delete-book": lambda: handle_delete_book(
+            args.book_id, args.librarian, None, book_service
+        ),
+        "update-book": lambda: handle_update_book(
+            args.book_id, args.librarian, None, args.title, args.author, book_service
+        ),
+        "update-status": lambda: handle_update_status(
+            args.book_id, args.status, args.librarian, None, book_service
+        ),
+        "list-books": lambda: handle_list_books(
+            args.librarian, args.username, book_service
+        ),
+        "pick-book": lambda: handle_pick_book(
+            args.book_id, args.username, book_service
+        ),
+        "list-picked": lambda: handle_list_picked(args.librarian, None, book_service),
+        "approve-borrow": lambda: handle_approve_borrow(
+            args.book_id, args.librarian, None, book_service
+        ),
+        "return-book": lambda: handle_return_book(
+            args.book_id, args.librarian, None, book_service
+        ),
+        "register-user": lambda: handle_register_user(
+            args.username, args.role, user_service
+        ),
+    }
+
+    func = command_map.get(args.command)
+    if func is None:
+        print("Unknown command")
+        return 1
+
+    return func()
+
+
+def main():
+    """Execute the CLI main entry point."""
+    parser = create_parser()
     args = parser.parse_args()
 
     if not args.command:
         parser.print_help()
         return 1
 
-    # Dependency injection: create services once via factory (testable, loose coupling)
     service_factory = ServiceFactory()
     book_service = service_factory.create_book_service()
     user_service = service_factory.create_user_service()
 
-    # Route to appropriate handler
     try:
-        if args.command == "add-book":
-            return handle_add_book(
-                args.title, args.author, args.librarian, None, book_service
-            )
-        elif args.command == "delete-book":
-            return handle_delete_book(args.book_id, args.librarian, None, book_service)
-        elif args.command == "update-book":
-            return handle_update_book(
-                args.book_id,
-                args.librarian,
-                None,
-                args.title,
-                args.author,
-                book_service,
-            )
-        elif args.command == "update-status":
-            return handle_update_status(
-                args.book_id, args.status, args.librarian, None, book_service
-            )
-        elif args.command == "list-books":
-            return handle_list_books(args.librarian, args.username, book_service)
-        elif args.command == "pick-book":
-            return handle_pick_book(args.book_id, args.username, book_service)
-        elif args.command == "list-picked":
-            return handle_list_picked(args.librarian, None, book_service)
-        elif args.command == "approve-borrow":
-            return handle_approve_borrow(
-                args.book_id, args.librarian, None, book_service
-            )
-        elif args.command == "return-book":
-            return handle_return_book(args.book_id, args.librarian, None, book_service)
-        elif args.command == "register-user":
-            return handle_register_user(args.username, args.role, user_service)
-        else:
-            parser.print_help()
-            return 1
+        return execute_command(args, book_service, user_service)
     except KeyboardInterrupt:
         print("\nOperation cancelled by user")
         return 1
