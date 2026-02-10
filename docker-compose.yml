@@ -1,6 +1,33 @@
 version: '3.8'
 
 services:
+  # MongoDB Database Service
+  mongodb:
+    image: mongo:7-alpine
+    container_name: school-library-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-password123}
+      MONGO_INITDB_DATABASE: ${MONGODB_DATABASE:-school_library}
+    ports:
+      - "${MONGODB_PORT:-27017}:27017"
+    volumes:
+      - mongodb-data:/data/db
+      - ./scripts/init_mongodb.js:/docker-entrypoint-initdb.d/init.js:ro
+    networks:
+      - library-network
+    healthcheck:
+      test: echo 'db.adminCommand("ping")' | mongosh localhost:27017/test -u ${MONGODB_USERNAME:-admin} -p ${MONGODB_PASSWORD:-password123} --authenticationDatabase admin
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    profiles:
+      - default
+      - prod
+      - dev
+
   # Main application service
   app:
     build:
@@ -13,6 +40,14 @@ services:
       PYTHONUNBUFFERED: 1
       PYTHONDONTWRITEBYTECODE: 1
       PORT: 8000
+      DATABASE_TYPE: ${DATABASE_TYPE:-mongodb}
+      MONGODB_HOST: ${MONGODB_HOST:-mongodb}
+      MONGODB_PORT: ${MONGODB_PORT:-27017}
+      MONGODB_DATABASE: ${MONGODB_DATABASE:-school_library}
+      MONGODB_USERNAME: ${MONGODB_USERNAME:-admin}
+      MONGODB_PASSWORD: ${MONGODB_PASSWORD:-password123}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
@@ -26,7 +61,10 @@ services:
       start_period: 5s
     restart: unless-stopped
     depends_on:
-      - app-init
+      mongodb:
+        condition: service_healthy
+      app-init:
+        condition: service_completed_successfully
     profiles:
       - default
       - prod
@@ -37,13 +75,22 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: school-library-init
-    command: python -c "import sys; print('Library app initialized')"
+    command: python scripts/init_mongodb.py
     environment:
       PYTHONUNBUFFERED: 1
+      DATABASE_TYPE: ${DATABASE_TYPE:-mongodb}
+      MONGODB_HOST: ${MONGODB_HOST:-mongodb}
+      MONGODB_PORT: ${MONGODB_PORT:-27017}
+      MONGODB_DATABASE: ${MONGODB_DATABASE:-school_library}
+      MONGODB_USERNAME: ${MONGODB_USERNAME:-admin}
+      MONGODB_PASSWORD: ${MONGODB_PASSWORD:-password123}
     volumes:
       - ./data:/app/data
     networks:
       - library-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
     profiles:
       - init
       - default
@@ -60,12 +107,21 @@ services:
       PYTHONUNBUFFERED: 1
       PYTHONDONTWRITEBYTECODE: 1
       PORT: 8000
+      DATABASE_TYPE: ${DATABASE_TYPE:-mongodb}
+      MONGODB_HOST: ${MONGODB_HOST:-mongodb}
+      MONGODB_PORT: ${MONGODB_PORT:-27017}
+      MONGODB_DATABASE: ${MONGODB_DATABASE:-school_library}
+      MONGODB_USERNAME: ${MONGODB_USERNAME:-admin}
+      MONGODB_PASSWORD: ${MONGODB_PASSWORD:-password123}
     volumes:
       - .:/app
       - /app/__pycache__
     networks:
       - library-network
     command: python web/server.py 8000
+    depends_on:
+      mongodb:
+        condition: service_healthy
     profiles:
       - dev
 
@@ -77,12 +133,21 @@ services:
     container_name: school-library-test
     environment:
       PYTHONUNBUFFERED: 1
+      DATABASE_TYPE: ${DATABASE_TYPE:-mongodb}
+      MONGODB_HOST: ${MONGODB_HOST:-mongodb}
+      MONGODB_PORT: ${MONGODB_PORT:-27017}
+      MONGODB_DATABASE: school_library_test
+      MONGODB_USERNAME: ${MONGODB_USERNAME:-admin}
+      MONGODB_PASSWORD: ${MONGODB_PASSWORD:-password123}
     volumes:
       - .:/app
       - /app/__pycache__
     networks:
       - library-network
     command: pytest -v --cov=. --cov-report=html
+    depends_on:
+      mongodb:
+        condition: service_healthy
     profiles:
       - test
 
@@ -120,5 +185,6 @@ networks:
     driver: bridge
 
 volumes:
+  mongodb-data:
   prometheus-data:
   redis-data:
