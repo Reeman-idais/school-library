@@ -27,7 +27,7 @@ class TestMongoDBUserStorage:
 
     def test_add_and_retrieve_user(self, mongodb_user_storage):
         """Test adding and retrieving a user."""
-        user = User(id=1, username="alice", role=Role.USER)
+        user = User(id=1, username="alice", password="pass123", role=Role.USER)
 
         result = mongodb_user_storage.add_user(user)
         assert result is True
@@ -39,7 +39,7 @@ class TestMongoDBUserStorage:
 
     def test_get_user_by_username(self, mongodb_user_storage):
         """Test retrieving a user by username."""
-        user = User(id=1, username="bob", role=Role.LIBRARIAN)
+        user = User(id=1, username="bob", password="pass123", role=Role.LIBRARIAN)
         mongodb_user_storage.add_user(user)
 
         retrieved = mongodb_user_storage.get_user_by_username("bob")
@@ -50,9 +50,9 @@ class TestMongoDBUserStorage:
     def test_load_all_users(self, mongodb_user_storage):
         """Test loading all users."""
         users = [
-            User(id=1, username="alice", role=Role.USER),
-            User(id=2, username="bob", role=Role.LIBRARIAN),
-            User(id=3, username="charlie", role=Role.USER),
+            User(id=1, username="alice", password="pass123", role=Role.USER),
+            User(id=2, username="bob", password="pass123", role=Role.LIBRARIAN),
+            User(id=3, username="charlie", password="pass123", role=Role.USER),
         ]
 
         for user in users:
@@ -66,7 +66,7 @@ class TestMongoDBUserStorage:
 
     def test_update_user(self, mongodb_user_storage):
         """Test updating a user."""
-        user = User(id=1, username="alice", role=Role.USER)
+        user = User(id=1, username="alice", password="pass123", role=Role.USER)
         mongodb_user_storage.add_user(user)
 
         user.borrowed_book_ids = [1, 2, 3]
@@ -78,7 +78,7 @@ class TestMongoDBUserStorage:
 
     def test_remove_user(self, mongodb_user_storage):
         """Test removing a user."""
-        user = User(id=1, username="alice", role=Role.USER)
+        user = User(id=1, username="alice", password="pass123", role=Role.USER)
         mongodb_user_storage.add_user(user)
 
         result = mongodb_user_storage.remove_user(1)
@@ -90,9 +90,11 @@ class TestMongoDBUserStorage:
     def test_search_users_by_username(self, mongodb_user_storage):
         """Test searching users by username."""
         users = [
-            User(id=1, username="alice_smith", role=Role.USER),
-            User(id=2, username="bob_jones", role=Role.USER),
-            User(id=3, username="alice_johnson", role=Role.LIBRARIAN),
+            User(id=1, username="alice_smith", password="pass123", role=Role.USER),
+            User(id=2, username="bob_jones", password="pass123", role=Role.USER),
+            User(
+                id=3, username="alice_johnson", password="pass123", role=Role.LIBRARIAN
+            ),
         ]
 
         for user in users:
@@ -105,9 +107,9 @@ class TestMongoDBUserStorage:
     def test_search_users_by_role(self, mongodb_user_storage):
         """Test searching users by role."""
         users = [
-            User(id=1, username="alice", role=Role.USER),
-            User(id=2, username="bob", role=Role.LIBRARIAN),
-            User(id=3, username="charlie", role=Role.USER),
+            User(id=1, username="alice", password="pass123", role=Role.USER),
+            User(id=2, username="bob", password="pass123", role=Role.LIBRARIAN),
+            User(id=3, username="charlie", password="pass123", role=Role.USER),
         ]
 
         for user in users:
@@ -134,14 +136,14 @@ class TestMongoDBUserStorage:
 
     def test_update_nonexistent_user(self, mongodb_user_storage):
         """Test updating a user that doesn't exist."""
-        user = User(id=999, username="nonexistent", role=Role.USER)
+        user = User(id=999, username="nonexistent", password="pass123", role=Role.USER)
         result = mongodb_user_storage.update_user(user)
         assert result is False
 
     def test_unique_username_constraint(self, mongodb_user_storage):
         """Test that usernames must be unique."""
-        user1 = User(id=1, username="alice", role=Role.USER)
-        user2 = User(id=2, username="alice", role=Role.USER)
+        user1 = User(id=1, username="alice", password="pass123", role=Role.USER)
+        user2 = User(id=2, username="alice", password="pass123", role=Role.USER)
 
         assert mongodb_user_storage.add_user(user1) is True
         # Attempt to add a second user with the same username (should be rejected)

@@ -179,7 +179,7 @@ class TestUserService:
     def test_get_user_role_existing_user(self, mocker):
         """Test getting role of existing user."""
         mock_storage = Mock()
-        mock_user = User.create("testuser", Role.USER)
+        mock_user = User.create("testuser", "1234", Role.USER)
         mock_storage.get_user_by_username.return_value = mock_user
 
         service = UserService(storage=mock_storage)
@@ -205,12 +205,12 @@ class TestUserService:
         """Test getting existing user."""
         mock_storage = Mock()
         mock_validate.return_value = (True, "")
-        existing_user = User.create("testuser", Role.USER)
+        existing_user = User.create("testuser", "1234", Role.USER)
         mock_storage.get_user_by_username.return_value = existing_user
 
         service = UserService(storage=mock_storage)
 
-        user, is_new = service.get_or_create_user("testuser", Role.USER)
+        user, is_new = service.get_or_create_user("testuser", "1234", Role.USER)
 
         assert user.username == "testuser"
         assert is_new is False
@@ -222,13 +222,13 @@ class TestUserService:
         mock_storage = Mock()
         mock_validate.return_value = (True, "")
         mock_storage.get_user_by_username.return_value = None
-        new_user = User.create("newuser", Role.USER)
+        new_user = User.create("newuser", "1234", Role.USER)
         mock_storage.create_user.return_value = new_user
 
         service = UserService(storage=mock_storage)
 
-        user, is_new = service.get_or_create_user("newuser", Role.USER)
+        user, is_new = service.get_or_create_user("newuser", "1234", Role.USER)
 
         assert user.username == "newuser"
         assert is_new is True
-        mock_storage.create_user.assert_called_once_with("newuser", Role.USER)
+        mock_storage.create_user.assert_called_once_with("newuser", "1234", Role.USER)

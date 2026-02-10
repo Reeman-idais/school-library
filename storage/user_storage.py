@@ -112,12 +112,13 @@ class UserStorage:
                 return user
         return None
 
-    def create_user(self, username: str, role: Role) -> Optional[User]:
+    def create_user(self, username: str, password: str, role: Role) -> Optional[User]:
         """
         Create a new user and save to storage.
 
         Args:
             username: Username for the new user
+            password: Password for the new user
             role: Role for the new user
 
         Returns:
@@ -128,7 +129,7 @@ class UserStorage:
             logger.warning(f"Username '{username}' already exists")
             return None
 
-        user = User.create(username, role)
+        user = User.create(username, password, role)
         users = self.load_users()
         users.append(user)
 

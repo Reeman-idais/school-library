@@ -2,20 +2,43 @@
 
 import argparse
 import sys
+from pathlib import Path
 
-from cli.commands import (
-    handle_add_book,
-    handle_approve_borrow,
-    handle_delete_book,
-    handle_list_books,
-    handle_list_picked,
-    handle_pick_book,
-    handle_register_user,
-    handle_return_book,
-    handle_update_book,
-    handle_update_status,
-)
-from core.factory import ServiceFactory
+try:
+    from cli.commands import (
+        handle_add_book,
+        handle_approve_borrow,
+        handle_delete_book,
+        handle_list_books,
+        handle_list_picked,
+        handle_pick_book,
+        handle_register_user,
+        handle_return_book,
+        handle_update_book,
+        handle_update_status,
+    )
+    from core.factory import ServiceFactory
+except Exception:
+    from dotenv import load_dotenv
+
+    # Load environment variables from .env file (fallback when necessary)
+    env_file = Path(__file__).parent / ".env"
+    if env_file.exists():
+        load_dotenv(env_file)
+
+    from cli.commands import (
+        handle_add_book,
+        handle_approve_borrow,
+        handle_delete_book,
+        handle_list_books,
+        handle_list_picked,
+        handle_pick_book,
+        handle_register_user,
+        handle_return_book,
+        handle_update_book,
+        handle_update_status,
+    )
+    from core.factory import ServiceFactory
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -137,6 +160,7 @@ def create_parser() -> argparse.ArgumentParser:
     # --- register-user ---
     register_parser = subparsers.add_parser("register-user", help="Register a new user")
     register_parser.add_argument("--username", required=True, help="Username")
+    register_parser.add_argument("--password", required=True, help="User password")
     register_parser.add_argument(
         "--role", required=True, choices=["librarian", "user"], help="User role"
     )
@@ -178,7 +202,7 @@ def execute_command(args, book_service, user_service):
             args.book_id, args.librarian, None, book_service
         ),
         "register-user": lambda: handle_register_user(
-            args.username, args.role, user_service
+            args.username, args.password, args.role, user_service
         ),
     }
 

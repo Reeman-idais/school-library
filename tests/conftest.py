@@ -79,7 +79,7 @@ def sample_book():
 @pytest.fixture
 def sample_user():
     """Create a sample User instance."""
-    return User.create("testuser", Role.USER)
+    return User.create("testuser", "1234", Role.USER)
 
 
 @pytest.fixture

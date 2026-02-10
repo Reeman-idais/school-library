@@ -18,8 +18,9 @@ on:
           - production
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  REGISTRY: docker.io
+  IMAGE_NAME: reeman123/school-library  # اسم الريبو على Docker Hub
+  IMAGE_TAG: v1                         # يمكن تغييره حسب الحاجة
 
 jobs:
   # Determine deployment environment
@@ -38,7 +39,6 @@ jobs:
             echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
           else
             echo "environment=staging" >> $GITHUB_OUTPUT
-          fi
       
       - name: Check if should deploy
         id: check-deploy
@@ -47,7 +47,6 @@ jobs:
             echo "should_deploy=true" >> $GITHUB_OUTPUT
           else
             echo "should_deploy=false" >> $GITHUB_OUTPUT
-          fi
 
   # Deploy to staging/production
   deploy:
@@ -57,45 +56,37 @@ jobs:
     if: needs.determine-env.outputs.should_deploy == 'true'
     environment:
       name: ${{ needs.determine-env.outputs.environment }}
-      url: ${{ steps.deploy.outputs.url }}
     
     permissions:
       contents: read
-      packages: read
+      packages: write
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Log in to Container Registry
+      - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.docker_username }}
+          password: ${{ secrets.docker_secret }}
       
-      - name: Deploy to ${{ needs.determine-env.outputs.environment }}
+      - name: Deploy image
         id: deploy
         env:
           ENVIRONMENT: ${{ needs.determine-env.outputs.environment }}
-          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
         run: |
-          echo "Preparing deployment package..."
-          IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
-          echo "image_tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+          IMAGE_FULL="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
+          echo "Deploying image: $IMAGE_FULL"
           
-          # Export deployment info
+          # مثال: استخدام docker pull على السيرفر أو سكريبت deploy
+          # ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "docker pull $IMAGE_FULL && docker run -d $IMAGE_FULL"
+          
           echo "url=https://${{ secrets.DEPLOY_HOST }}" >> $GITHUB_OUTPUT
-          
-          # Example deployment script (customize for your infrastructure)
-          # ./scripts/deploy.sh "${ENVIRONMENT}" "${IMAGE_TAG}"
       
       - name: Health Check
         run: |
           echo "Performing health check on ${{ needs.determine-env.outputs.environment }}..."
-          # Add your health check command here
           sleep 5
           echo "✅ Deployment successful!"
       
@@ -112,6 +103,7 @@ jobs:
                   "text": {
                     "type": "mrkdwn",
                     "text": "*Deployment Status*\nEnvironment: `${{ needs.determine-env.outputs.environment }}`\nStatus: `${{ job.status }}`\nCommit: <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
+
                   }
                 }
               ]

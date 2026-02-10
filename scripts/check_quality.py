@@ -6,16 +6,13 @@ Project Quality Check Script
 
 import subprocess
 import sys
-from pathlib import Path
 
 
 def run_command(cmd: list, description: str) -> bool:
     """تشغيل أمر والتحقق من النجاح"""
     print(f"🔍 فحص: {description}...", end=" ")
     try:
-        result = subprocess.run(
-            cmd, capture_output=True, text=True, timeout=30
-        )
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
         if result.returncode == 0:
             print("✅")
             return True

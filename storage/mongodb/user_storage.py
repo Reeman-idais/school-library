@@ -98,12 +98,63 @@ class MongoDBUserStorage:
     def add_user(self, user: User) -> bool:
         """Add a new user to MongoDB."""
         try:
+            # If user has placeholder id (0), assign next numeric id
+            if getattr(user, "id", 0) == 0:
+                user.id = self._get_next_id()
+
             doc = self._user_to_doc(user)
             result = self.collection.insert_one(doc)
             logger.info(f"Added user {user.id} with ObjectId {result.inserted_id}")
             return True
         except PyMongoError as e:
             logger.error(f"Error adding user: {e}")
+            return False
+
+    def create_user(self, username: str, password: str, role: Role) -> Optional[User]:
+        """
+        Create a new user and save to MongoDB.
+
+        Args:
+            username: Username for the new user
+            password: Password for the new user
+            role: Role for the new user
+
+        Returns:
+            Created User object if successful, None otherwise
+        """
+        try:
+            # Check if username already exists
+            if self.get_user_by_username(username):
+                logger.warning(f"Username '{username}' already exists")
+                return None
+
+            # Create user using User.create() method
+            user = User.create(username, password, role)
+
+            # Add to MongoDB
+            if self.add_user(user):
+                logger.info(f"Created user '{username}' with role '{role.value}'")
+                return user
+            else:
+                logger.error(f"Failed to save user '{username}'")
+                return None
+        except Exception as e:
+            logger.error(f"Error creating user '{username}': {e}")
+            return None
+
+    def user_exists(self, username: str) -> bool:
+        """
+        Check if a user exists.
+
+        Args:
+            username: Username to check
+
+        Returns:
+            True if user exists, False otherwise
+        """
+        try:
+            return self.get_user_by_username(username) is not None
+        except Exception:
             return False
 
     def update_user(self, user: User) -> bool:
@@ -140,7 +191,13 @@ class MongoDBUserStorage:
             if "username" in kwargs:
                 query["username"] = {"$regex": kwargs["username"], "$options": "i"}
             if "role" in kwargs:
-                query["role"] = kwargs["role"]
+                # Accept either Role enum or raw string
+                role_val = (
+                    kwargs["role"].value
+                    if isinstance(kwargs["role"], Role)
+                    else kwargs["role"]
+                )
+                query["role"] = role_val
 
             users = []
             for doc in self.collection.find(query):
@@ -154,18 +211,20 @@ class MongoDBUserStorage:
     def _user_to_doc(user: User) -> dict:
         """Convert User object to MongoDB document."""
         return {
-            "id": user.id,
+            "id": int(user.id),
             "username": user.username,
+            "password": user.password,
             "role": user.role.value,
-            "borrowed_book_ids": user.borrowed_book_ids,
+            "borrowed_book_ids": getattr(user, "borrowed_book_ids", []),
         }
 
     @staticmethod
     def _doc_to_user(doc: dict) -> User:
         """Convert MongoDB document to User object."""
         return User(
-            id=doc["id"],
+            id=int(doc["id"]),
             username=doc["username"],
+            password=doc.get("password", ""),  # Backward compatibility
             role=Role(doc["role"]),
             borrowed_book_ids=doc.get("borrowed_book_ids", []),
         )
