@@ -227,6 +227,7 @@ jobs:
             echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
           else
             echo "environment=staging" >> $GITHUB_OUTPUT
+          fi
 
       - name: Check if should deploy
         id: check-deploy
@@ -235,6 +236,7 @@ jobs:
             echo "should_deploy=true" >> $GITHUB_OUTPUT
           else
             echo "should_deploy=false" >> $GITHUB_OUTPUT
+          fi
 
   deploy:
     name: Deploy to ${{ needs.determine-env.outputs.environment }}
