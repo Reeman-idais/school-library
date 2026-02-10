@@ -131,8 +131,6 @@ jobs:
           MONGO_INITDB_DATABASE: school_library_test
         ports:
           - 27017:27017
-        options: >-
-          --health-cmd='["mongosh","mongodb://admin:password123@mongodb:27017/admin","--eval","db.adminCommand({ping:1})","--quiet"]' --health-interval=10s --health-timeout=5s --health-retries=5
 
     steps:
       - name: Checkout code
@@ -165,12 +163,13 @@ jobs:
           import os, time
           from pymongo import MongoClient
           uri = os.environ['MONGODB_URI']
-          for i in range(60):
+          for i in range(120):
               try:
-                  MongoClient(uri, serverSelectionTimeoutMS=2000).admin.command('ping')
+                  MongoClient(uri, serverSelectionTimeoutMS=3000).admin.command('ping')
                   print('MongoDB is ready')
                   break
               except Exception as e:
+                  print(f'Attempt {i+1}: {e}')
                   time.sleep(1)
           else:
               raise SystemExit('MongoDB did not start in time')
