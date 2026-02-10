@@ -52,7 +52,7 @@ class MongoDBUserStorage:
                 {"$inc": {"sequence_value": 1}},
                 return_document=True,
             )
-            return result["sequence_value"]
+            return int(result["sequence_value"])
         except PyMongoError as e:
             logger.error(f"Error getting next ID: {e}")
             raise

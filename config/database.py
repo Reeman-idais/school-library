@@ -28,7 +28,7 @@ class MongoDBConfig:
     def connection_string(self) -> str:
         """Generate connection string from config."""
         if self.uri:
-            return self.uri
+            return str(self.uri)
 
         if self.username and self.password:
             return f"mongodb://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}?authSource=admin"
