@@ -194,6 +194,13 @@ services:
 # بناء وتشغيل جميع الخدمات
 docker-compose up -d
 
+# تشغيل التطبيق فقط (باستخدام قاعدة بيانات خارجية)
+# ضع URI الخاص بـ MongoDB في متغير البيئة MONGODB_URI أو في ملف .env، ثم شغّل:
+# export MONGODB_URI="mongodb://user:pass@host:27017/school_library"
+# أو على ويندوز (PowerShell): $env:MONGODB_URI = "mongodb://user:pass@host:27017/school_library"
+# ثم شغّل الحاوية التي تحتوي التطبيق فقط:
+# docker-compose -f docker-compose.app.yml up -d
+
 # عرض السجلات
 docker-compose logs -f app
 
@@ -219,6 +226,7 @@ make docker-seed
 - ✅ فحص جودة الكود
 - ✅ بناء صور Docker
 - ✅ نشر آلي
+- 🔐 لتشغيل اختبارات الاندماج وبناء الصور في CI يجب إضافة Secret باسم `MONGODB_URI` في إعدادات المستودع (Settings → Secrets → Actions).
 
 📖 [تفاصيل الـ CI/CD](docs/CI_CD_PIPELINES.md)
 

@@ -54,7 +54,7 @@ class MongoDBUserStorage:
             )
             if result is None:
                 raise RuntimeError("User ID counter missing")
-            return int(result["sequence_value"]) 
+            return int(result["sequence_value"])
         except PyMongoError as e:
             logger.error(f"Error getting next ID: {e}")
             raise
