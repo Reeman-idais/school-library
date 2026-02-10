@@ -1,7 +1,6 @@
 """User model for the library management system."""
 
 from dataclasses import dataclass, field
-from typing import List
 
 from .role import Role
 
@@ -14,7 +13,7 @@ class User:
     username: str
     password: str
     role: Role
-    borrowed_book_ids: List[int] = field(default_factory=list)
+    borrowed_book_ids: list[int] = field(default_factory=list)
 
     @classmethod
     def create(cls, username: str, password: str, role: Role) -> "User":
