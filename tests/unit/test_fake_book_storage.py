@@ -1,5 +1,5 @@
-from storage.fake.book_storage import FakeBookStorage
 from models.book import Book
+from storage.fake.book_storage import FakeBookStorage
 
 
 def test_add_and_get_book():

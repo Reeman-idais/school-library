@@ -5,6 +5,7 @@ These fixtures are only loaded when running integration tests (e.g. -m integrati
 or running the tests in tests/integration/). They rely on environment variables
 for MongoDB connection details (MONGODB_HOST, MONGODB_PORT, ...).
 """
+
 from typing import Generator
 
 import pytest

@@ -1,10 +1,10 @@
 """Book service with business logic for book operations."""
 
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 from lib_logging.logger import get_logger
 from models.book import Book, BookStatus
-from storage.book_storage import BookStorage
+from storage.interfaces import BookRepository
 from validation.book_validator import (
     validate_book_for_creation,
     validate_book_for_update,
@@ -14,16 +14,15 @@ logger = get_logger(__name__)
 
 
 class BookService:
-    """Service for book-related operations."""
+    """Service for book-related operations.
 
-    def __init__(self, storage: Optional[BookStorage] = None):
-        """
-        Initialize book service.
+    This service depends on a storage repository (injected as `BookRepository`).
+    Dependency Injection is required and no default repository is constructed here.
+    """
 
-        Args:
-            storage: BookStorage instance (creates new if not provided)
-        """
-        self.storage = storage or BookStorage()
+    def __init__(self, storage: BookRepository):
+        """Initialize BookService with an explicit repository (Dependency Injection)."""
+        self.storage: BookRepository = storage
 
     def add_book(
         self, book_id: int, title: str, author: str

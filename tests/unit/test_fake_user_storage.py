@@ -1,5 +1,5 @@
-from storage.fake.user_storage import FakeUserStorage
 from models.role import Role
+from storage.fake.user_storage import FakeUserStorage
 
 
 def test_create_and_get_user():

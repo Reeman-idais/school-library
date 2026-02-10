@@ -1,11 +1,11 @@
 """User service with business logic for user operations."""
 
-from typing import Optional, Tuple
+from typing import Tuple
 
 from lib_logging.logger import get_logger
 from models.role import Role
 from models.user import User
-from storage.user_storage import UserStorage
+from storage.interfaces import UserRepository
 from validation.user_validator import (
     validate_password,
     validate_role,
@@ -16,16 +16,15 @@ logger = get_logger(__name__)
 
 
 class UserService:
-    """Service for user-related operations."""
+    """Service for user-related operations.
 
-    def __init__(self, storage: Optional[UserStorage] = None):
-        """
-        Initialize user service.
+    Requires a UserRepository to be injected; no default repository is constructed
+    inside this service to keep dependencies explicit and testable.
+    """
 
-        Args:
-            storage: UserStorage instance (creates new if not provided)
-        """
-        self.storage = storage or UserStorage()
+    def __init__(self, storage: UserRepository):
+        """Initialize UserService with injected repository."""
+        self.storage: UserRepository = storage
 
     def get_or_create_user(
         self, username: str, password: str, role: Role
