@@ -132,7 +132,7 @@ jobs:
         ports:
           - 27017:27017
         options: >-
-          --health-cmd='mongosh --username admin --password password123 --eval "db.adminCommand({ping:1})"' --health-interval=10s --health-timeout=5s --health-retries=5
+          --health-cmd='["mongosh","mongodb://admin:password123@mongodb:27017/admin","--eval","db.adminCommand({ping:1})","--quiet"]' --health-interval=10s --health-timeout=5s --health-retries=5
 
     steps:
       - name: Checkout code
@@ -262,13 +262,25 @@ jobs:
           fi
           echo "suffix=${SUFFIX}" >> $GITHUB_OUTPUT
 
+      - name: Determine publish tag
+        id: publish_tag
+        run: |
+          # On main branch, use the stable 'latest' tag; otherwise use the first generated tag
+          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          else
+            TAGS="${{ steps.meta.outputs.tags }}"
+            FIRST_TAG=$(echo "$TAGS" | tr ', ' '\n' | head -n1 | tr -d '\r')
+            echo "tag=$FIRST_TAG" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
           file: ./${{ matrix.dockerfile }}
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && (secrets.DOCKER_USERNAME && secrets.DOCKER_PASSWORD) }}
-          tags: ${{ steps.meta.outputs.tags }}${{ steps.suffix.outputs.suffix }}
+          tags: ${{ steps.meta.outputs.tags }}${{ steps.suffix.outputs.suffix }},${{ steps.publish_tag.outputs.tag }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
@@ -326,7 +338,8 @@ jobs:
         env:
           ENVIRONMENT: ${{ needs.determine-env.outputs.environment }}
         run: |
-          IMAGE_FULL="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
+          # Deploy the 'latest' image for main (build job pushes 'latest' on main)
+          IMAGE_FULL="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
           echo "Deploying image: $IMAGE_FULL"
           echo "url=https://${{ secrets.DEPLOY_HOST }}" >> $GITHUB_OUTPUT
 
