@@ -10,23 +10,15 @@ sys.path.insert(0, str(project_root))
 
 import pytest  # noqa: E402
 
-# Ensure MongoDB fixtures in a separate module are loaded by pytest
-pytest_plugins = ["tests.conftest_mongodb"]
-
 from lib_logging.logger import get_logger  # noqa: E402
 from models.book import Book  # noqa: E402
 from models.role import Role  # noqa: E402
 from models.user import User  # noqa: E402
 
-# Import mongodb fixtures (kept in a separate file) so pytest discovers them
-try:
-    from .conftest_mongodb import *  # noqa: F401,F403
-except Exception:
-    # If relative import fails (when tests executed differently), try absolute import
-    try:
-        from tests.conftest_mongodb import *  # noqa: F401,F403
-    except Exception:
-        pass
+# NOTE: MongoDB fixtures are intentionally NOT auto-imported here.
+# Integration tests live under tests/integration/ and include their own conftest
+# that sets up MongoDB fixtures. This keeps the default test run fast and
+# independent of MongoDB (good for CI).
 
 
 @pytest.fixture

@@ -31,6 +31,14 @@ class StorageFactory:
                 cls._instances["book_storage_json"] = BookStorage()
             return cls._instances["book_storage_json"]
 
+        elif storage_type == "fake":
+            # Use in-memory, deterministic fake storage for unit tests and CI
+            from storage.fake.book_storage import FakeBookStorage
+
+            if "book_storage_fake" not in cls._instances:
+                cls._instances["book_storage_fake"] = FakeBookStorage()
+            return cls._instances["book_storage_fake"]
+
         else:
             logger.error(f"Unknown database type: {storage_type}")
             raise ValueError(f"Unsupported DATABASE_TYPE: {storage_type}")
@@ -53,6 +61,13 @@ class StorageFactory:
             if "user_storage_json" not in cls._instances:
                 cls._instances["user_storage_json"] = UserStorage()
             return cls._instances["user_storage_json"]
+
+        elif storage_type == "fake":
+            from storage.fake.user_storage import FakeUserStorage
+
+            if "user_storage_fake" not in cls._instances:
+                cls._instances["user_storage_fake"] = FakeUserStorage()
+            return cls._instances["user_storage_fake"]
 
         else:
             logger.error(f"Unknown database type: {storage_type}")

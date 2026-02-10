@@ -1,0 +1,61 @@
+name: Integration tests (MongoDB)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    env:
+      # Default to fake DB for safety -- overridden below by service-derived env
+      DATABASE_TYPE: mongodb
+    services:
+      mongodb:
+        image: mongo:7
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: password123
+          MONGO_INITDB_DATABASE: school_library_test
+        ports:
+          - 27017:27017
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip poetry
+          poetry install
+
+      - name: Set Mongo env variables pointing to localhost (service port mapped)
+        run: |
+          echo "MONGODB_HOST=127.0.0.1" >> $GITHUB_ENV
+          echo "MONGODB_PORT=27017" >> $GITHUB_ENV
+          echo "MONGODB_DATABASE=school_library_test" >> $GITHUB_ENV
+          echo "MONGODB_USERNAME=admin" >> $GITHUB_ENV
+          echo "MONGODB_PASSWORD=password123" >> $GITHUB_ENV
+          echo "MONGODB_URI=mongodb://admin:password123@127.0.0.1:27017/school_library_test?authSource=admin" >> $GITHUB_ENV
+
+      - name: Wait for MongoDB to be ready
+        env:
+          MONGODB_URI: ${{ env.MONGODB_URI }}
+        run: |
+          poetry run python scripts/wait_mongo.py
+
+      - name: Initialize MongoDB (create indexes and counters)
+        env:
+          MONGODB_URI: ${{ env.MONGODB_URI }}
+        run: |
+          poetry run python scripts/init_mongodb.py
+
+      - name: Run integration tests
+        env:
+          MONGODB_URI: ${{ env.MONGODB_URI }}
+        run: |
+          poetry run pytest -v -m integration -r a
