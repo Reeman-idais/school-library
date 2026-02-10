@@ -4,8 +4,7 @@ from typing import List, Optional, Tuple
 
 from lib_logging.logger import get_logger
 from models.book import Book, BookStatus
-from storage.repositories.base import BookRepository
-from storage.factory import StorageFactory
+from storage.book_storage import BookStorage
 from validation.book_validator import (
     validate_book_for_creation,
     validate_book_for_update,
@@ -15,19 +14,16 @@ logger = get_logger(__name__)
 
 
 class BookService:
-    """Service for book-related operations.
+    """Service for book-related operations."""
 
-    Uses a `BookRepository` abstraction for data access.
-    """
-
-    def __init__(self, storage: Optional[BookRepository] = None):
+    def __init__(self, storage: Optional[BookStorage] = None):
         """
         Initialize book service.
 
         Args:
-            storage: BookRepository instance (creates new if not provided)
+            storage: BookStorage instance (creates new if not provided)
         """
-        self.storage = storage or StorageFactory().create_book_storage()
+        self.storage = storage or BookStorage()
 
     def add_book(
         self, book_id: int, title: str, author: str

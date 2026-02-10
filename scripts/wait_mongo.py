@@ -7,7 +7,7 @@ from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 # Read the connection URI from the environment (CI sets MONGODB_URI)
 uri = os.environ.get(
     "MONGODB_URI",
-    "mongodb://admin:password123@localhost:27017/school_library_test?authSource=admin",
+    "mongodb://admin:password123@mongodb:27017/school_library_test?authSource=admin",
 )
 
 max_retries = 120
