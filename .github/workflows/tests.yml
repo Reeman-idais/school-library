@@ -1,0 +1,89 @@
+name: Tests
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  unit:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.10, 3.11, 3.12]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry config virtualenvs.create false
+          poetry install --no-interaction --no-ansi
+      - name: Run unit tests
+        run: poetry run pytest -q -m "not integration"
+
+  integration:
+    name: Integration tests (MongoDB)
+    needs: unit
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:7
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: password123
+          MONGO_INITDB_DATABASE: school_library_test
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd='mongosh --eval "db.adminCommand({ ping: 1 })" || exit 1'
+          --health-interval=5s --health-timeout=10s --health-retries=12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry config virtualenvs.create false
+          poetry install --no-interaction --no-ansi
+      - name: Wait for MongoDB
+        run: python scripts/wait_mongo.py
+      - name: Ensure admin user exists
+        run: |
+          python - <<'PY'
+          import time
+          from pymongo import MongoClient
+          client = MongoClient('mongodb://admin:password123@localhost:27017')
+          try:
+              client.admin.command('ping')
+              print('Auth works with admin user')
+          except Exception:
+              print('Auth failed, attempting to create user without auth...')
+              client = MongoClient('mongodb://localhost:27017')
+              admin = client.admin
+              users = admin.command('usersInfo').get('users', [])
+              if not users:
+                  print('No users found; creating admin user')
+                  admin.command('createUser', 'admin', pwd='password123', roles=[{'role':'root','db':'admin'}])
+                  print('admin user created')
+              else:
+                  print('Users exist already:', users)
+          PY
+      - name: Run integration tests
+        env:
+          MONGO_URI: mongodb://admin:password123@localhost:27017/school_library_test
+          MONGODB_USERNAME: admin
+          MONGODB_PASSWORD: password123
+          MONGODB_DATABASE: school_library_test
+        run: |
+          poetry run pytest -q -m integration -r a
