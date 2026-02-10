@@ -1,20 +1,24 @@
+import os
 import time
 
 import pymongo
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 
-max_retries = 30
+# Read the connection URI from the environment (CI sets MONGODB_URI)
+uri = os.environ.get(
+    "MONGODB_URI",
+    "mongodb://admin:password123@mongodb:27017/school_library_test?authSource=admin",
+)
+
+max_retries = 120
 for attempt in range(max_retries):
     try:
-        client = pymongo.MongoClient(
-            "mongodb://admin:password123@localhost:27017/school_library_test",
-            serverSelectionTimeoutMS=5000,
-        )
+        client = pymongo.MongoClient(uri, serverSelectionTimeoutMS=5000)
         client.admin.command("ping")
         print("MongoDB is ready")
         break
-    except (ConnectionFailure, ServerSelectionTimeoutError):
-        print("waiting...", attempt)
+    except (ConnectionFailure, ServerSelectionTimeoutError) as e:
+        print(f"Attempt {attempt + 1}/{max_retries}: {e}")
         time.sleep(1)
 else:
-    raise RuntimeError("MongoDB did not start in time")
+    raise SystemExit("MongoDB did not start in time")
