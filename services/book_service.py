@@ -1,6 +1,6 @@
 """Book service with business logic for book operations."""
 
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from lib_logging.logger import get_logger
 from models.book import Book, BookStatus

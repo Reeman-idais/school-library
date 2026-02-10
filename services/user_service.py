@@ -1,6 +1,6 @@
 """User service with business logic for user operations."""
 
-from typing import Tuple
+from typing import Optional, Tuple
 
 from lib_logging.logger import get_logger
 from models.role import Role
