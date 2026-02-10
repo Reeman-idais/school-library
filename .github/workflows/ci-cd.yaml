@@ -12,9 +12,33 @@ env:
   DOCKER_TAG: v1
 
 jobs:
-  # 1️⃣ Build & Test (runs on ubuntu)
+  # 1️⃣ Build & Test (runs on Ubuntu)
   build_test:
     runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:6
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: admin
+          MONGO_INITDB_DATABASE: school_library_test
+        options: >-
+          --health-cmd "mongosh -u admin -p admin --authenticationDatabase admin --eval 'db.adminCommand(\"ping\")'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          --health-start-period 10s
+        ports:
+          - 27017:27017
+
+    env:
+      DATABASE_TYPE: mongodb
+      MONGODB_HOST: localhost
+      MONGODB_PORT: 27017
+      MONGODB_DATABASE: school_library_test
+      MONGODB_USERNAME: admin
+      MONGODB_PASSWORD: admin
 
     steps:
       - name: Checkout code
@@ -32,8 +56,31 @@ jobs:
           poetry install --no-interaction --no-ansi
 
       - name: Lint (flake8)
+        run: poetry run flake8 . || true
+
+      - name: Wait for MongoDB
         run: |
-          poetry run flake8 . || true
+          python << 'EOF'
+          import time
+          import pymongo
+          from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
+
+          max_retries = 30
+          for attempt in range(max_retries):
+              try:
+                  client = pymongo.MongoClient(
+                      'mongodb://admin:admin@localhost:27017/school_library_test',
+                      serverSelectionTimeoutMS=5000
+                  )
+                  client.admin.command('ping')
+                  print('MongoDB is ready')
+                  break
+              except (ConnectionFailure, ServerSelectionTimeoutError):
+                  if attempt < max_retries - 1:
+                      time.sleep(1)
+                  else:
+                      raise RuntimeError('MongoDB did not start in time')
+          EOF
 
       - name: Run tests with coverage
         run: poetry run pytest -v --cov=. --cov-report=term-missing
@@ -68,5 +115,3 @@ jobs:
             ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
           cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache
           cache-to: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache,mode=max
-
-  # Optional: Add other jobs like release, security-scan in other workflows

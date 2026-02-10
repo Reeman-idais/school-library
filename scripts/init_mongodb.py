@@ -3,10 +3,10 @@
 import os
 import sys
 import time
+from typing import List, Optional
 
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
-from typing import Optional, List
 
 # Configure Python path to include the project root
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -162,7 +162,9 @@ def main() -> None:
         expected_db_count = int(os.getenv("MONGODB_EXPECTED_DB_COUNT", "0")) or None
         expected_collections_env = os.getenv("MONGODB_EXPECTED_COLLECTIONS", "")
         if expected_collections_env:
-            expected_collections = [c.strip() for c in expected_collections_env.split(",") if c.strip()]
+            expected_collections = [
+                c.strip() for c in expected_collections_env.split(",") if c.strip()
+            ]
         else:
             expected_collections = None
 

@@ -11,15 +11,18 @@ Usage:
 import json
 import logging
 import os
-from pathlib import Path
-from typing import Any, Dict, List
 
 # Ensure project root is on sys.path when executed inside container
 import sys
+from pathlib import Path
+from typing import Any, Dict, List
+
+from pymongo import UpdateOne
+
+from config.database import MongoDBConfig, MongoDBConnection
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from config.database import MongoDBConnection, MongoDBConfig
-from pymongo import UpdateOne
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("seed")
@@ -52,7 +55,11 @@ def seed_books(db, books: List[Dict[str, Any]]):
             pass
 
     result = db["books"].bulk_write(ops)
-    logger.info("Books seeded: matched=%s, upserted=%s", result.matched_count, len(result.upserted_ids))
+    logger.info(
+        "Books seeded: matched=%s, upserted=%s",
+        result.matched_count,
+        len(result.upserted_ids),
+    )
 
     # Ensure counter at least max_id
     if max_id > 0:
@@ -80,7 +87,11 @@ def seed_users(db, users: List[Dict[str, Any]]):
             max_user_id = max(max_user_id, uid)
 
     result = db["users"].bulk_write(ops)
-    logger.info("Users seeded: matched=%s, upserted=%s", result.matched_count, len(result.upserted_ids))
+    logger.info(
+        "Users seeded: matched=%s, upserted=%s",
+        result.matched_count,
+        len(result.upserted_ids),
+    )
 
     # Update numeric user counter when numeric IDs present
     if numeric_ids_seen and max_user_id > 0:
