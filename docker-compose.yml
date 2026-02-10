@@ -1,0 +1,124 @@
+version: '3.8'
+
+services:
+  # Main application service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: school-library-app
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    environment:
+      PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 1
+      PORT: 8000
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - library-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import http.client; conn = http.client.HTTPConnection('localhost', 8000); conn.request('GET', '/health'); conn.getresponse()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+    depends_on:
+      - app-init
+    profiles:
+      - default
+      - prod
+
+  # Initialization service (runs migrations/setup)
+  app-init:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: school-library-init
+    command: python -c "import sys; print('Library app initialized')"
+    environment:
+      PYTHONUNBUFFERED: 1
+    volumes:
+      - ./data:/app/data
+    networks:
+      - library-network
+    profiles:
+      - init
+      - default
+
+  # Development service with mounted code
+  app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: school-library-dev
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    environment:
+      PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 1
+      PORT: 8000
+    volumes:
+      - .:/app
+      - /app/__pycache__
+    networks:
+      - library-network
+    command: python web/server.py 8000
+    profiles:
+      - dev
+
+  # Testing service
+  app-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: school-library-test
+    environment:
+      PYTHONUNBUFFERED: 1
+    volumes:
+      - .:/app
+      - /app/__pycache__
+    networks:
+      - library-network
+    command: pytest -v --cov=. --cov-report=html
+    profiles:
+      - test
+
+  # Optional: Prometheus monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: school-library-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - library-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    profiles:
+      - monitoring
+
+  # Optional: Redis caching (if needed in future)
+  redis:
+    image: redis:7-alpine
+    container_name: school-library-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - library-network
+    profiles:
+      - cache
+
+networks:
+  library-network:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+  redis-data:

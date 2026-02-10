@@ -36,7 +36,6 @@ def create_parser() -> argparse.ArgumentParser:
     )
     add_book_parser.add_argument("--title", required=True, help="Book title")
     add_book_parser.add_argument("--author", required=True, help="Book author")
-    add_book_parser.add_argument("--isbn", help="ISBN (optional)")
     add_book_parser.add_argument(
         "--librarian", action="store_true", help="Login as librarian"
     )
@@ -154,7 +153,6 @@ def execute_command(args, book_service, user_service):
             args.author,
             args.librarian,
             None,
-            getattr(args, "isbn", None),
             book_service,
         ),
         "delete-book": lambda: handle_delete_book(

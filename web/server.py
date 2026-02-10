@@ -52,10 +52,12 @@ class LibraryWebHandler(http.server.BaseHTTPRequestHandler):
         "add-book",
         "delete-book",
         "update-book",
-        "search",
-        "borrow",
-        "return",
-        "list-available",
+        "update-status",
+        "list-books",
+        "pick-book",
+        "list-picked",
+        "approve-borrow",
+        "return-book",
         "register-user",
     }
 

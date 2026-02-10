@@ -98,120 +98,151 @@
 
         .section h3 {
             color: #333;
-            margin-top: 20px;
+            margin-top: 15px;
             margin-bottom: 10px;
-            font-size: 18px;
-        }
-
-        .section p {
-            line-height: 1.6;
-            color: #555;
-            margin-bottom: 10px;
-        }
-
-        .section ul, .section ol {
-            margin-left: 20px;
-            margin-bottom: 15px;
-        }
-
-        .section li {
-            margin-bottom: 8px;
-            line-height: 1.6;
-        }
-
-        code {
-            background: #f4f4f4;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            color: #e83e8c;
-        }
-
-        pre {
-            background: #1e1e1e;
-            color: #d4d4d4;
-            padding: 15px;
-            border-radius: 6px;
-            overflow-x: auto;
-            margin: 15px 0;
-        }
-
-        pre code {
-            background: none;
-            color: #d4d4d4;
-            padding: 0;
+            font-size: 16px;
         }
 
         .command-example {
-            background: #f8f9fa;
+            background: #f5f5f5;
             border-left: 4px solid #667eea;
             padding: 12px;
             margin: 10px 0;
             border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+        }
+
+        .command-example code {
+            background: transparent;
+            color: #333;
+            font-size: 13px;
+        }
+
+        pre, code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+
+        pre {
+            padding: 12px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        pre code {
+            padding: 0;
+            background: transparent;
+        }
+
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .collapsible {
+            cursor: pointer;
+            user-select: none;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            transition: background 0.2s;
+        }
+
+        .collapsible:hover {
+            background: #efefef;
+        }
+
+        .collapsible.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .collapsible-content.active {
+            max-height: 2000px;
+            transition: max-height 0.3s ease-in;
         }
 
         .command-builder {
-            padding: 20px;
-            background: #2d2d2d;
+            padding: 15px;
             border-bottom: 1px solid #444;
+            flex-shrink: 0;
         }
 
         .command-builder h3 {
-            color: #fff;
+            color: #d4d4d4;
+            font-size: 14px;
             margin-bottom: 15px;
-            font-size: 16px;
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .form-group label {
             display: block;
-            color: #ccc;
+            color: #888;
             font-size: 12px;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            font-weight: 600;
         }
 
-        .form-group select,
-        .form-group input {
+        .form-group input,
+        .form-group select {
             width: 100%;
-            padding: 8px;
-            background: #1e1e1e;
+            padding: 6px 8px;
+            background: #2d2d2d;
+            color: #d4d4d4;
             border: 1px solid #444;
-            border-radius: 4px;
-            color: #fff;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 12px;
         }
 
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
             border-color: #667eea;
+            background: #333;
         }
 
         .command-preview {
-            background: #1e1e1e;
-            padding: 10px;
-            border-radius: 4px;
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 3px;
+            padding: 8px;
             margin: 10px 0;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            color: #4ec9b0;
-            word-break: break-all;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 11px;
+            color: #90ee90;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            min-height: 20px;
         }
 
         .btn {
-            padding: 10px 20px;
+            padding: 8px 16px;
             border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
+            border-radius: 3px;
+            font-size: 12px;
             cursor: pointer;
-            transition: all 0.3s;
-            margin-right: 10px;
+            font-weight: 600;
+            margin-right: 5px;
+            transition: all 0.2s;
         }
 
         .btn-primary {
@@ -224,63 +255,66 @@
         }
 
         .btn-secondary {
-            background: #6c757d;
-            color: white;
+            background: #444;
+            color: #d4d4d4;
         }
 
         .btn-secondary:hover {
-            background: #5a6268;
+            background: #555;
         }
 
         .terminal-output {
             flex: 1;
-            padding: 20px;
             overflow-y: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            line-height: 1.6;
+            padding: 15px;
+            background: #1e1e1e;
+            border-top: 1px solid #444;
         }
 
         .terminal-line {
-            margin-bottom: 5px;
+            color: #d4d4d4;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            margin-bottom: 4px;
         }
 
         .terminal-prompt {
-            color: #4ec9b0;
+            color: #90ee90;
+        }
+
+        .terminal-success {
+            color: #90ee90;
+        }
+
+        .terminal-error {
+            color: #ff6b6b;
         }
 
         .terminal-output-text {
             color: #d4d4d4;
         }
 
-        .terminal-error {
-            color: #f48771;
-        }
-
-        .terminal-success {
-            color: #4ec9b0;
-        }
-
         .command-history {
-            max-height: 200px;
-            overflow-y: auto;
-            background: #1e1e1e;
             padding: 10px;
             border-top: 1px solid #444;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 11px;
         }
 
         .history-item {
-            padding: 5px;
+            padding: 4px;
+            color: #666;
             cursor: pointer;
-            color: #ccc;
-            font-size: 12px;
-            font-family: 'Courier New', monospace;
-            border-bottom: 1px solid #333;
+            border-radius: 2px;
+            margin-bottom: 2px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
         }
 
         .history-item:hover {
-            background: #2d2d2d;
-            color: #fff;
+            background: #333;
+            color: #999;
         }
 
         .examples-dropdown {
@@ -290,61 +324,18 @@
         .examples-dropdown select {
             width: 100%;
             padding: 8px;
-            background: #1e1e1e;
+            background: #2d2d2d;
+            color: #d4d4d4;
             border: 1px solid #444;
-            border-radius: 4px;
-            color: #fff;
-            font-size: 13px;
-        }
-
-        .collapsible {
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .collapsible::before {
-            content: '▶ ';
-            display: inline-block;
-            transition: transform 0.3s;
-        }
-
-        .collapsible.active::before {
-            transform: rotate(90deg);
-        }
-
-        .collapsible-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s;
-        }
-
-        .collapsible-content.active {
-            max-height: 1000px;
-        }
-
-        .copy-btn {
-            background: #444;
-            color: #fff;
-            border: none;
-            padding: 4px 8px;
             border-radius: 3px;
-            font-size: 11px;
-            cursor: pointer;
-            margin-left: 10px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 12px;
         }
 
-        .copy-btn:hover {
-            background: #555;
-        }
-
-        @media (max-width: 1200px) {
-            .main-content {
-                flex-direction: column;
-            }
-            .terminal-panel {
-                width: 100%;
-                max-height: 500px;
-            }
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
         }
     </style>
 </head>
@@ -362,14 +353,14 @@
             <div class="docs-panel">
                 <div class="section">
                     <h2>Introduction</h2>
-                    <p>The Electronic Library Management System v1.0 is a CLI-based application built with Python that provides comprehensive library management functionality with role-based access control, JSON persistence, and centralized logging.</p>
+                    <p>The Electronic Library Management System v2.0 is a CLI-based application built with Python that provides comprehensive library management functionality with role-based access control, unified book identification (ID + TITLE + AUTHOR), JSON persistence, and centralized logging.</p>
                     
                     <h3>Key Features</h3>
                     <ul>
                         <li><strong>Role-Based Access Control:</strong> Separate permissions for librarians and users</li>
-                        <li><strong>Book Management:</strong> Add, delete, update, search, and list books</li>
-                        <li><strong>Borrowing System:</strong> Users can borrow and return books</li>
-                        <li><strong>ISBN Validation:</strong> Validates 4-10 digit numeric IDs</li>
+                        <li><strong>Book Management:</strong> Add, delete, update, and list books</li>
+                        <li><strong>Borrowing Workflow:</strong> Users can pick books → Librarians approve and return</li>
+                        <li><strong>Unified Book ID:</strong> 4-10 digit numeric IDs with title and author</li>
                         <li><strong>JSON Persistence:</strong> All data stored in JSON files with atomic writes</li>
                         <li><strong>Centralized Logging:</strong> Comprehensive logging with INFO, WARNING, and ERROR levels</li>
                         <li><strong>Input Validation:</strong> Strict validation for all operations</li>
@@ -380,7 +371,7 @@
                     <h2>Quick Start</h2>
                     <h3>Installation</h3>
                     <ol>
-                        <li>Ensure Python 3.7+ is installed</li>
+                        <li>Ensure Python 3.8+ is installed</li>
                         <li>No external dependencies required (uses only Python standard library)</li>
                         <li>Navigate to the project directory</li>
                     </ol>
@@ -393,7 +384,7 @@
                     <ol>
                         <li>Register a user: <code>python main.py register-user --username alice --role user</code></li>
                         <li>Register a librarian: <code>python main.py register-user --username bob --role librarian</code></li>
-                        <li>Add a book (as librarian): <code>python main.py add-book --title "Book Title" --author "Author" --isbn "1234" --role librarian</code></li>
+                        <li>Add a book (as librarian): <code>python main.py add-book --id 1001 --title "Python 101" --author "John Doe" --librarian</code></li>
                     </ol>
                 </div>
 
@@ -409,7 +400,7 @@
                         </div>
                         <p><strong>Example:</strong></p>
                         <pre><code>python main.py register-user --username alice --role user
-python main.py register-user --username librarian1 --role librarian</code></pre>
+python main.py register-user --username bob --role librarian</code></pre>
                     </div>
 
                     <h3 class="collapsible" onclick="toggleCollapse(this)">2. add-book (Librarian Only)</h3>
@@ -417,11 +408,11 @@ python main.py register-user --username librarian1 --role librarian</code></pre>
                         <p>Add a new book to the library. Requires librarian role.</p>
                         <div class="command-example">
                             <strong>Usage:</strong><br>
-                            <code>python main.py add-book --title &lt;title&gt; --author &lt;author&gt; --isbn &lt;isbn&gt; --role librarian</code>
+                            <code>python main.py add-book --id &lt;4-10 digits&gt; --title &lt;title&gt; --author &lt;author&gt; --librarian</code>
                         </div>
                         <p><strong>Example:</strong></p>
-                        <pre><code>python main.py add-book --title "The Great Gatsby" --author "F. Scott Fitzgerald" --isbn "0743273567" --role librarian</code></pre>
-                        <p><strong>Note:</strong> ISBN must be 4-10 digits.</p>
+                        <pre><code>python main.py add-book --id 1001 --title "The Great Gatsby" --author "F. Scott Fitzgerald" --librarian</code></pre>
+                        <p><strong>Note:</strong> Book ID must be 4-10 digits (numeric).</p>
                     </div>
 
                     <h3 class="collapsible" onclick="toggleCollapse(this)">3. delete-book (Librarian Only)</h3>
@@ -429,10 +420,10 @@ python main.py register-user --username librarian1 --role librarian</code></pre>
                         <p>Delete a book from the library. Requires librarian role.</p>
                         <div class="command-example">
                             <strong>Usage:</strong><br>
-                            <code>python main.py delete-book --id &lt;book-uuid&gt; --role librarian</code>
+                            <code>python main.py delete-book --id &lt;book-id&gt; --librarian</code>
                         </div>
                         <p><strong>Example:</strong></p>
-                        <pre><code>python main.py delete-book --id 252d8186-5c88-4da2-bef7-80b610ba4c1b --role librarian</code></pre>
+                        <pre><code>python main.py delete-book --id 1001 --librarian</code></pre>
                     </div>
 
                     <h3 class="collapsible" onclick="toggleCollapse(this)">4. update-book (Librarian Only)</h3>
@@ -440,54 +431,93 @@ python main.py register-user --username librarian1 --role librarian</code></pre>
                         <p>Update book information. Requires librarian role. At least one field must be provided.</p>
                         <div class="command-example">
                             <strong>Usage:</strong><br>
-                            <code>python main.py update-book --id &lt;book-uuid&gt; [--title &lt;title&gt;] [--author &lt;author&gt;] [--isbn &lt;isbn&gt;] --role librarian</code>
+                            <code>python main.py update-book --id &lt;book-id&gt; [--title &lt;title&gt;] [--author &lt;author&gt;] --librarian</code>
                         </div>
                         <p><strong>Example:</strong></p>
-                        <pre><code>python main.py update-book --id 252d8186-5c88-4da2-bef7-80b610ba4c1b --title "New Title" --role librarian</code></pre>
+                        <pre><code>python main.py update-book --id 1001 --title "New Title" --librarian</code></pre>
                     </div>
 
-                    <h3 class="collapsible" onclick="toggleCollapse(this)">5. search (Librarian & User)</h3>
+                    <h3 class="collapsible" onclick="toggleCollapse(this)">5. update-status (Librarian Only)</h3>
                     <div class="collapsible-content">
-                        <p>Search books by title, author, or ISBN. Available to both roles.</p>
+                        <p>Update book status. Available statuses: Available, Picked, Borrowed.</p>
                         <div class="command-example">
                             <strong>Usage:</strong><br>
-                            <code>python main.py search --query &lt;search-term&gt; --role &lt;librarian|user&gt;</code>
+                            <code>python main.py update-status --id &lt;book-id&gt; --status &lt;Available|Picked|Borrowed&gt; --librarian</code>
                         </div>
                         <p><strong>Example:</strong></p>
-                        <pre><code>python main.py search --query "Gatsby" --role user</code></pre>
+                        <pre><code>python main.py update-status --id 1001 --status Available --librarian</code></pre>
                     </div>
 
-                    <h3 class="collapsible" onclick="toggleCollapse(this)">6. borrow (User Only)</h3>
+                    <h3 class="collapsible" onclick="toggleCollapse(this)">6. list-books (Both Roles)</h3>
                     <div class="collapsible-content">
-                        <p>Borrow a book. Requires user role.</p>
+                        <p>List all books in the library. Available to both users and librarians.</p>
                         <div class="command-example">
                             <strong>Usage:</strong><br>
-                            <code>python main.py borrow --id &lt;book-uuid&gt; --username &lt;username&gt; --role user</code>
+                            <code>python main.py list-books [--username &lt;username&gt;|--librarian]</code>
                         </div>
                         <p><strong>Example:</strong></p>
-                        <pre><code>python main.py borrow --id 252d8186-5c88-4da2-bef7-80b610ba4c1b --username alice --role user</code></pre>
+                        <pre><code>python main.py list-books --librarian
+python main.py list-books --username alice</code></pre>
                     </div>
 
-                    <h3 class="collapsible" onclick="toggleCollapse(this)">7. return (User Only)</h3>
+                    <h3 class="collapsible" onclick="toggleCollapse(this)">7. pick-book (User Only)</h3>
                     <div class="collapsible-content">
-                        <p>Return a borrowed book. Requires user role.</p>
+                        <p>Pick (reserve) an available book for borrowing. Changes book status to Picked.</p>
                         <div class="command-example">
                             <strong>Usage:</strong><br>
-                            <code>python main.py return --id &lt;book-uuid&gt; --role user</code>
+                            <code>python main.py pick-book --id &lt;book-id&gt; --username &lt;username&gt;</code>
                         </div>
                         <p><strong>Example:</strong></p>
-                        <pre><code>python main.py return --id 252d8186-5c88-4da2-bef7-80b610ba4c1b --role user</code></pre>
+                        <pre><code>python main.py pick-book --id 1001 --username alice</code></pre>
                     </div>
 
-                    <h3 class="collapsible" onclick="toggleCollapse(this)">8. list-available (Librarian & User)</h3>
+                    <h3 class="collapsible" onclick="toggleCollapse(this)">8. list-picked (Librarian Only)</h3>
                     <div class="collapsible-content">
-                        <p>List all available books. Available to both roles.</p>
+                        <p>List all books that have been picked by users (reserved for borrowing).</p>
                         <div class="command-example">
                             <strong>Usage:</strong><br>
-                            <code>python main.py list-available --role &lt;librarian|user&gt;</code>
+                            <code>python main.py list-picked --librarian</code>
                         </div>
                         <p><strong>Example:</strong></p>
-                        <pre><code>python main.py list-available --role user</code></pre>
+                        <pre><code>python main.py list-picked --librarian</code></pre>
+                    </div>
+
+                    <h3 class="collapsible" onclick="toggleCollapse(this)">9. approve-borrow (Librarian Only)</h3>
+                    <div class="collapsible-content">
+                        <p>Approve a picked book for borrowing. Changes book status to Borrowed.</p>
+                        <div class="command-example">
+                            <strong>Usage:</strong><br>
+                            <code>python main.py approve-borrow --id &lt;book-id&gt; --librarian</code>
+                        </div>
+                        <p><strong>Example:</strong></p>
+                        <pre><code>python main.py approve-borrow --id 1001 --librarian</code></pre>
+                    </div>
+
+                    <h3 class="collapsible" onclick="toggleCollapse(this)">10. return-book (Librarian Only)</h3>
+                    <div class="collapsible-content">
+                        <p>Return a borrowed book to the library. Changes book status to Available.</p>
+                        <div class="command-example">
+                            <strong>Usage:</strong><br>
+                            <code>python main.py return-book --id &lt;book-id&gt; --librarian</code>
+                        </div>
+                        <p><strong>Example:</strong></p>
+                        <pre><code>python main.py return-book --id 1001 --librarian</code></pre>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Borrowing Workflow</h2>
+                    <p>The borrowing process involves three main steps:</p>
+                    <ol>
+                        <li><strong>User Picks:</strong> User reserves an available book (changes status to Picked)</li>
+                        <li><strong>Librarian Approves:</strong> Librarian reviews and approves the borrowing (changes status to Borrowed)</li>
+                        <li><strong>Librarian Returns:</strong> Librarian marks book as returned (changes status to Available)</li>
+                    </ol>
+                    <div class="mermaid">
+                        graph LR
+                            A[Available] -->|User picks| B[Picked]
+                            B -->|Librarian approves| C[Borrowed]
+                            C -->|Librarian returns| A
                     </div>
                 </div>
 
@@ -507,7 +537,7 @@ python main.py register-user --username librarian1 --role librarian</code></pre>
                     <ul>
                         <li><strong>CLI Layer:</strong> Argparse command interface</li>
                         <li><strong>Service Layer:</strong> Business logic (book_service, user_service, borrow_service)</li>
-                        <li><strong>Validation Layer:</strong> Input validation (ISBN, book data, user data)</li>
+                        <li><strong>Validation Layer:</strong> Input validation (ID validation, book data, user data)</li>
                         <li><strong>Storage Layer:</strong> JSON persistence (book_storage, user_storage)</li>
                         <li><strong>Logging Layer:</strong> Centralized logging system</li>
                     </ul>
@@ -521,10 +551,10 @@ python main.py register-user --username librarian1 --role librarian</code></pre>
 
 result = subprocess.run(
     ['python', 'main.py', 'add-book', 
+     '--id', '1001',
      '--title', 'Book Title',
      '--author', 'Author Name',
-     '--isbn', '1234',
-     '--role', 'librarian'],
+     '--librarian'],
     capture_output=True,
     text=True
 )
@@ -546,10 +576,11 @@ if result.returncode != 0:
                     <h3>Common Issues</h3>
                     <ul>
                         <li><strong>Import Errors:</strong> Make sure you're running from the project root directory</li>
-                        <li><strong>Permission Errors:</strong> Check that you're using the correct role for each command</li>
-                        <li><strong>ISBN Errors:</strong> Ensure ISBN is 4-10 digits (numeric only)</li>
+                        <li><strong>Permission Errors:</strong> Check that you're using the correct role for each command (--librarian or --username)</li>
+                        <li><strong>ID Validation Errors:</strong> Ensure ID is 4-10 digits (numeric only)</li>
                         <li><strong>Book Not Found:</strong> Verify the book ID is correct and exists</li>
-                        <li><strong>Book Already Borrowed:</strong> Check book status before borrowing</li>
+                        <li><strong>Book Already Picked:</strong> Check book status before picking</li>
+                        <li><strong>User Not Found:</strong> Ensure the user is registered before picking books</li>
                     </ul>
                 </div>
             </div>
@@ -565,10 +596,10 @@ if result.returncode != 0:
                             <option value="add-book">Add Book</option>
                             <option value="delete-book">Delete Book</option>
                             <option value="update-book">Update Book</option>
-                            <option value="search">Search Books</option>
-                            <option value="borrow">Borrow Book</option>
-                            <option value="return">Return Book</option>
-                            <option value="list-available">List Available</option>
+                            <option value="list-books">List Books</option>
+                            <option value="pick-book">Pick Book</option>
+                            <option value="approve-borrow">Approve Borrow</option>
+                            <option value="return-book">Return Book</option>
                         </select>
                     </div>
 
@@ -580,10 +611,12 @@ if result.returncode != 0:
                             <option value="add-book">add-book</option>
                             <option value="delete-book">delete-book</option>
                             <option value="update-book">update-book</option>
-                            <option value="search">search</option>
-                            <option value="borrow">borrow</option>
-                            <option value="return">return</option>
-                            <option value="list-available">list-available</option>
+                            <option value="update-status">update-status</option>
+                            <option value="list-books">list-books</option>
+                            <option value="pick-book">pick-book</option>
+                            <option value="list-picked">list-picked</option>
+                            <option value="approve-borrow">approve-borrow</option>
+                            <option value="return-book">return-book</option>
                         </select>
                     </div>
 
@@ -634,7 +667,6 @@ if result.returncode != 0:
             }
 
             let fieldsHTML = '';
-            let previewParts = ['python', 'main.py', command];
 
             switch(command) {
                 case 'register-user':
@@ -655,6 +687,10 @@ if result.returncode != 0:
                 case 'add-book':
                     fieldsHTML = `
                         <div class="form-group">
+                            <label>Book ID (4-10 digits)</label>
+                            <input type="text" id="field-id" oninput="updatePreview()" placeholder="1001">
+                        </div>
+                        <div class="form-group">
                             <label>Title</label>
                             <input type="text" id="field-title" oninput="updatePreview()" placeholder="Book Title">
                         </div>
@@ -663,30 +699,25 @@ if result.returncode != 0:
                             <input type="text" id="field-author" oninput="updatePreview()" placeholder="Author Name">
                         </div>
                         <div class="form-group">
-                            <label>ISBN (4-10 digits)</label>
-                            <input type="text" id="field-isbn" oninput="updatePreview()" placeholder="1234">
-                        </div>
-                        <div class="form-group">
-                            <label>Role</label>
-                            <select id="field-role" onchange="updatePreview()">
-                                <option value="librarian">librarian</option>
-                                <option value="user">user</option>
+                            <label>Librarian Mode</label>
+                            <select id="field-librarian" onchange="updatePreview()">
+                                <option value="yes">Yes (--librarian)</option>
                             </select>
                         </div>
                     `;
                     break;
                 case 'delete-book':
-                case 'return':
+                case 'approve-borrow':
+                case 'return-book':
                     fieldsHTML = `
                         <div class="form-group">
-                            <label>Book ID (UUID)</label>
-                            <input type="text" id="field-id" oninput="updatePreview()" placeholder="252d8186-5c88-4da2-bef7-80b610ba4c1b">
+                            <label>Book ID</label>
+                            <input type="text" id="field-id" oninput="updatePreview()" placeholder="1001">
                         </div>
                         <div class="form-group">
-                            <label>Role</label>
-                            <select id="field-role" onchange="updatePreview()">
-                                <option value="librarian">librarian</option>
-                                <option value="user">user</option>
+                            <label>Librarian Mode</label>
+                            <select id="field-librarian" onchange="updatePreview()">
+                                <option value="yes">Yes (--librarian)</option>
                             </select>
                         </div>
                     `;
@@ -694,8 +725,8 @@ if result.returncode != 0:
                 case 'update-book':
                     fieldsHTML = `
                         <div class="form-group">
-                            <label>Book ID (UUID)</label>
-                            <input type="text" id="field-id" oninput="updatePreview()" placeholder="252d8186-5c88-4da2-bef7-80b610ba4c1b">
+                            <label>Book ID</label>
+                            <input type="text" id="field-id" oninput="updatePreview()" placeholder="1001">
                         </div>
                         <div class="form-group">
                             <label>Title (optional)</label>
@@ -706,47 +737,68 @@ if result.returncode != 0:
                             <input type="text" id="field-author" oninput="updatePreview()" placeholder="New Author">
                         </div>
                         <div class="form-group">
-                            <label>ISBN (optional)</label>
-                            <input type="text" id="field-isbn" oninput="updatePreview()" placeholder="1234">
-                        </div>
-                        <div class="form-group">
-                            <label>Role</label>
-                            <select id="field-role" onchange="updatePreview()">
-                                <option value="librarian">librarian</option>
-                                <option value="user">user</option>
+                            <label>Librarian Mode</label>
+                            <select id="field-librarian" onchange="updatePreview()">
+                                <option value="yes">Yes (--librarian)</option>
                             </select>
                         </div>
                     `;
                     break;
-                case 'search':
-                case 'list-available':
+                case 'update-status':
                     fieldsHTML = `
                         <div class="form-group">
-                            <label>${command === 'search' ? 'Query' : 'Role'}</label>
-                            ${command === 'search' 
-                                ? '<input type="text" id="field-query" oninput="updatePreview()" placeholder="Search term">'
-                                : '<select id="field-role" onchange="updatePreview()"><option value="librarian">librarian</option><option value="user">user</option></select>'}
+                            <label>Book ID</label>
+                            <input type="text" id="field-id" oninput="updatePreview()" placeholder="1001">
                         </div>
-                        ${command === 'search' 
-                            ? '<div class="form-group"><label>Role</label><select id="field-role" onchange="updatePreview()"><option value="librarian">librarian</option><option value="user">user</option></select></div>'
-                            : ''}
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select id="field-status" onchange="updatePreview()">
+                                <option value="Available">Available</option>
+                                <option value="Picked">Picked</option>
+                                <option value="Borrowed">Borrowed</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Librarian Mode</label>
+                            <select id="field-librarian" onchange="updatePreview()">
+                                <option value="yes">Yes (--librarian)</option>
+                            </select>
+                        </div>
                     `;
                     break;
-                case 'borrow':
+                case 'list-books':
                     fieldsHTML = `
                         <div class="form-group">
-                            <label>Book ID (UUID)</label>
-                            <input type="text" id="field-id" oninput="updatePreview()" placeholder="252d8186-5c88-4da2-bef7-80b610ba4c1b">
+                            <label>User Type</label>
+                            <select id="field-user-type" onchange="updatePreview()">
+                                <option value="librarian">Librarian (--librarian)</option>
+                                <option value="user">User (--username)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label id="user-label">Username</label>
+                            <input type="text" id="field-username" oninput="updatePreview()" placeholder="alice">
+                        </div>
+                    `;
+                    break;
+                case 'pick-book':
+                    fieldsHTML = `
+                        <div class="form-group">
+                            <label>Book ID</label>
+                            <input type="text" id="field-id" oninput="updatePreview()" placeholder="1001">
                         </div>
                         <div class="form-group">
                             <label>Username</label>
                             <input type="text" id="field-username" oninput="updatePreview()" placeholder="alice">
                         </div>
+                    `;
+                    break;
+                case 'list-picked':
+                    fieldsHTML = `
                         <div class="form-group">
-                            <label>Role</label>
-                            <select id="field-role" onchange="updatePreview()">
-                                <option value="user">user</option>
-                                <option value="librarian">librarian</option>
+                            <label>Librarian Mode</label>
+                            <select id="field-librarian" onchange="updatePreview()">
+                                <option value="yes">Yes (--librarian)</option>
                             </select>
                         </div>
                     `;
@@ -772,51 +824,54 @@ if result.returncode != 0:
                     if (role) args.push('--role', role);
                     break;
                 case 'add-book':
+                    const id = document.getElementById('field-id')?.value;
                     const title = document.getElementById('field-title')?.value;
                     const author = document.getElementById('field-author')?.value;
-                    const isbn = document.getElementById('field-isbn')?.value;
-                    const addRole = document.getElementById('field-role')?.value;
+                    if (id) args.push('--id', id);
                     if (title) args.push('--title', title);
                     if (author) args.push('--author', author);
-                    if (isbn) args.push('--isbn', isbn);
-                    if (addRole) args.push('--role', addRole);
+                    args.push('--librarian');
                     break;
                 case 'delete-book':
-                case 'return':
-                    const id = document.getElementById('field-id')?.value;
-                    const delRole = document.getElementById('field-role')?.value;
-                    if (id) args.push('--id', id);
-                    if (delRole) args.push('--role', delRole);
+                case 'approve-borrow':
+                case 'return-book':
+                    const delId = document.getElementById('field-id')?.value;
+                    if (delId) args.push('--id', delId);
+                    args.push('--librarian');
                     break;
                 case 'update-book':
                     const upId = document.getElementById('field-id')?.value;
                     const upTitle = document.getElementById('field-title')?.value;
                     const upAuthor = document.getElementById('field-author')?.value;
-                    const upIsbn = document.getElementById('field-isbn')?.value;
-                    const upRole = document.getElementById('field-role')?.value;
                     if (upId) args.push('--id', upId);
                     if (upTitle) args.push('--title', upTitle);
                     if (upAuthor) args.push('--author', upAuthor);
-                    if (upIsbn) args.push('--isbn', upIsbn);
-                    if (upRole) args.push('--role', upRole);
+                    args.push('--librarian');
                     break;
-                case 'search':
-                    const query = document.getElementById('field-query')?.value;
-                    const searchRole = document.getElementById('field-role')?.value;
-                    if (query) args.push('--query', query);
-                    if (searchRole) args.push('--role', searchRole);
+                case 'update-status':
+                    const sId = document.getElementById('field-id')?.value;
+                    const status = document.getElementById('field-status')?.value;
+                    if (sId) args.push('--id', sId);
+                    if (status) args.push('--status', status);
+                    args.push('--librarian');
                     break;
-                case 'list-available':
-                    const listRole = document.getElementById('field-role')?.value;
-                    if (listRole) args.push('--role', listRole);
+                case 'list-books':
+                    const userType = document.getElementById('field-user-type')?.value;
+                    if (userType === 'librarian') {
+                        args.push('--librarian');
+                    } else {
+                        const uname = document.getElementById('field-username')?.value;
+                        if (uname) args.push('--username', uname);
+                    }
                     break;
-                case 'borrow':
-                    const borId = document.getElementById('field-id')?.value;
-                    const borUsername = document.getElementById('field-username')?.value;
-                    const borRole = document.getElementById('field-role')?.value;
-                    if (borId) args.push('--id', borId);
-                    if (borUsername) args.push('--username', borUsername);
-                    if (borRole) args.push('--role', borRole);
+                case 'pick-book':
+                    const pId = document.getElementById('field-id')?.value;
+                    const pUsername = document.getElementById('field-username')?.value;
+                    if (pId) args.push('--id', pId);
+                    if (pUsername) args.push('--username', pUsername);
+                    break;
+                case 'list-picked':
+                    args.push('--librarian');
                     break;
             }
 
@@ -831,19 +886,19 @@ if result.returncode != 0:
             document.getElementById('command-select').value = example;
             updateCommandBuilder();
 
-            // Pre-fill with example data
             switch(example) {
                 case 'register-user':
                     document.getElementById('field-username').value = 'alice';
                     document.getElementById('field-role').value = 'user';
                     break;
                 case 'add-book':
+                    document.getElementById('field-id').value = '1001';
                     document.getElementById('field-title').value = 'The Great Gatsby';
                     document.getElementById('field-author').value = 'F. Scott Fitzgerald';
-                    document.getElementById('field-isbn').value = '1234';
                     break;
-                case 'search':
-                    document.getElementById('field-query').value = 'Gatsby';
+                case 'pick-book':
+                    document.getElementById('field-id').value = '1001';
+                    document.getElementById('field-username').value = 'alice';
                     break;
             }
             updatePreview();
@@ -856,7 +911,7 @@ if result.returncode != 0:
                 return;
             }
 
-            let args = [];  // FIXED: Changed from const to let
+            let args = [];
             const commandMap = {
                 'register-user': () => {
                     const username = document.getElementById('field-username')?.value;
@@ -865,55 +920,62 @@ if result.returncode != 0:
                     return ['--username', username, '--role', role];
                 },
                 'add-book': () => {
+                    const id = document.getElementById('field-id')?.value;
                     const title = document.getElementById('field-title')?.value;
                     const author = document.getElementById('field-author')?.value;
-                    const isbn = document.getElementById('field-isbn')?.value;
-                    const role = document.getElementById('field-role')?.value;
-                    if (!title || !author || !isbn || !role) return null;
-                    return ['--title', title, '--author', author, '--isbn', isbn, '--role', role];
+                    if (!id || !title || !author) return null;
+                    return ['--id', id, '--title', title, '--author', author, '--librarian'];
                 },
                 'delete-book': () => {
                     const id = document.getElementById('field-id')?.value;
-                    const role = document.getElementById('field-role')?.value;
-                    if (!id || !role) return null;
-                    return ['--id', id, '--role', role];
+                    if (!id) return null;
+                    return ['--id', id, '--librarian'];
                 },
                 'update-book': () => {
                     const id = document.getElementById('field-id')?.value;
-                    const role = document.getElementById('field-role')?.value;
+                    if (!id) return null;
+                    const result = ['--id', id];
                     const title = document.getElementById('field-title')?.value;
                     const author = document.getElementById('field-author')?.value;
-                    const isbn = document.getElementById('field-isbn')?.value;
-                    if (!id || !role) return null;
-                    const result = ['--id', id, '--role', role];
                     if (title) result.push('--title', title);
                     if (author) result.push('--author', author);
-                    if (isbn) result.push('--isbn', isbn);
+                    result.push('--librarian');
                     return result;
                 },
-                'search': () => {
-                    const query = document.getElementById('field-query')?.value;
-                    const role = document.getElementById('field-role')?.value;
-                    if (!query || !role) return null;
-                    return ['--query', query, '--role', role];
+                'update-status': () => {
+                    const id = document.getElementById('field-id')?.value;
+                    const status = document.getElementById('field-status')?.value;
+                    if (!id || !status) return null;
+                    return ['--id', id, '--status', status, '--librarian'];
                 },
-                'borrow': () => {
+                'list-books': () => {
+                    const userType = document.getElementById('field-user-type')?.value;
+                    if (userType === 'librarian') {
+                        return ['--librarian'];
+                    } else {
+                        const username = document.getElementById('field-username')?.value;
+                        if (!username) return null;
+                        return ['--username', username];
+                    }
+                },
+                'pick-book': () => {
                     const id = document.getElementById('field-id')?.value;
                     const username = document.getElementById('field-username')?.value;
-                    const role = document.getElementById('field-role')?.value;
-                    if (!id || !username || !role) return null;
-                    return ['--id', id, '--username', username, '--role', role];
+                    if (!id || !username) return null;
+                    return ['--id', id, '--username', username];
                 },
-                'return': () => {
+                'list-picked': () => {
+                    return ['--librarian'];
+                },
+                'approve-borrow': () => {
                     const id = document.getElementById('field-id')?.value;
-                    const role = document.getElementById('field-role')?.value;
-                    if (!id || !role) return null;
-                    return ['--id', id, '--role', role];
+                    if (!id) return null;
+                    return ['--id', id, '--librarian'];
                 },
-                'list-available': () => {
-                    const role = document.getElementById('field-role')?.value;
-                    if (!role) return null;
-                    return ['--role', role];
+                'return-book': () => {
+                    const id = document.getElementById('field-id')?.value;
+                    if (!id) return null;
+                    return ['--id', id, '--librarian'];
                 }
             };
 
@@ -927,7 +989,6 @@ if result.returncode != 0:
             addTerminalOutput(fullCommand, 'prompt');
             addTerminalOutput('Executing...', 'text');
 
-            // Add to history
             commandHistory.unshift(fullCommand);
             updateHistory();
 
@@ -1002,7 +1063,6 @@ if result.returncode != 0:
         }
 
         function loadFromHistory(cmd) {
-            // Parse command and populate fields
             const parts = cmd.split(' ');
             if (parts.length < 3) return;
             
@@ -1010,7 +1070,6 @@ if result.returncode != 0:
             document.getElementById('command-select').value = command;
             updateCommandBuilder();
             
-            // Try to extract arguments (simplified)
             addTerminalOutput(`Loading: ${cmd}`, 'text');
         }
 

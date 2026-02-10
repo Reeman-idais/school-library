@@ -105,7 +105,7 @@ components:
       properties:
         command:
           type: string
-          enum: [add-book, delete-book, update-book, search, borrow, return, list-available, register-user]
+          enum: [add-book, delete-book, update-book, update-status, list-books, pick-book, list-picked, approve-borrow, return-book, register-user]
         args:
           type: array
           items: { type: string }

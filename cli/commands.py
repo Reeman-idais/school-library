@@ -89,7 +89,6 @@ def handle_add_book(
     author: str,
     is_librarian: bool = False,
     username: Optional[str] = None,
-    isbn: Optional[str] = None,
     book_service: Optional[BookService] = None,
 ) -> int:
     """
@@ -101,7 +100,6 @@ def handle_add_book(
         author: Book author
         is_librarian: True if logging in as librarian
         username: Username (not used for librarian, required for users but users can't add books)
-        isbn: ISBN (optional)
 
     Returns:
         Exit code (0 for success, 1 for failure)
@@ -112,6 +110,7 @@ def handle_add_book(
         print(f"ERROR: {error_msg}")
         return 1
 
+    assert book_id is not None, "book_id should not be None after validation"
     # Check role
     user_role, error_msg = _get_role_from_login(is_librarian, username)
     if error_msg:
@@ -125,13 +124,15 @@ def handle_add_book(
 
     # Add book
     svc = _resolve_book_service(book_service)
-    book, error_msg = svc.add_book(book_id, title, author, isbn=isbn)
+    book, error_msg = svc.add_book(book_id, title, author)
 
     if error_msg:
         print(f"ERROR: {error_msg}")
         return 1
 
     assert book is not None, "book should not be None after successful add"
+    print(f"SUCCESS: Added book '{book.title}' by {book.author} (ID: {book.id})")
+    return 0
     isbn_display = f" (ISBN: {book.isbn})" if book.isbn else ""
     print(
         f"SUCCESS: Added book '{book.title}' by {book.author} (ID: {book.id}){isbn_display}"

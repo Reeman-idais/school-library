@@ -1,0 +1,31 @@
+# Dockerfile for testing
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy project files
+COPY pyproject.toml poetry.lock* ./
+
+# Install Poetry
+RUN pip install --no-cache-dir poetry
+
+# Install all dependencies including dev
+RUN poetry config virtualenvs.in-project true && \
+    poetry install --no-interaction --no-ansi
+
+# Copy application code
+COPY . .
+
+# Set environment variables
+ENV PATH="/app/.venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Default test command
+CMD ["poetry", "run", "pytest", "-v", "--cov=.", "--cov-report=html", "--cov-report=term"]
