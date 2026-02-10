@@ -8,28 +8,38 @@ logger = get_logger(__name__)
 
 
 class StorageFactory:
-    """Factory for creating storage implementations based on configuration."""
+    """Factory for creating storage repository implementations based on configuration.
+
+    Returns instances that implement the `BookRepository` interface.
+    """
 
     _instances: dict[str, object] = {}  # Cache for singleton pattern
 
     @classmethod
     def create_book_storage(cls):
-        """Create book storage instance based on configuration."""
+        """Create a BookRepository instance based on configuration."""
         storage_type = os.getenv("DATABASE_TYPE", "json").lower()
 
         if storage_type == "mongodb":
-            from storage.mongodb.book_storage import MongoDBBookStorage
+            from storage.repositories.mongo_repo import MongoBookRepository
 
-            if "book_storage_mongodb" not in cls._instances:
-                cls._instances["book_storage_mongodb"] = MongoDBBookStorage()
-            return cls._instances["book_storage_mongodb"]
+            if "book_repo_mongodb" not in cls._instances:
+                cls._instances["book_repo_mongodb"] = MongoBookRepository()
+            return cls._instances["book_repo_mongodb"]
 
         elif storage_type == "json":
-            from storage.book_storage import BookStorage
+            from storage.repositories.json_repo import JSONBookRepository
 
-            if "book_storage_json" not in cls._instances:
-                cls._instances["book_storage_json"] = BookStorage()
-            return cls._instances["book_storage_json"]
+            if "book_repo_json" not in cls._instances:
+                cls._instances["book_repo_json"] = JSONBookRepository()
+            return cls._instances["book_repo_json"]
+
+        elif storage_type == "fake":
+            from storage.repositories.fake_repo import FakeBookRepository
+
+            if "book_repo_fake" not in cls._instances:
+                cls._instances["book_repo_fake"] = FakeBookRepository()
+            return cls._instances["book_repo_fake"]
 
         else:
             logger.error(f"Unknown database type: {storage_type}")

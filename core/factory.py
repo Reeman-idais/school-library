@@ -5,9 +5,9 @@ from typing import Optional
 
 from services.book_service import BookService
 from services.user_service import UserService
-from storage.book_storage import BookStorage
 from storage.factory import StorageFactory as ConfigurableStorageFactory
-from storage.user_storage import UserStorage
+from storage.repositories.base import BookRepository
+from storage.user_storage import UserStorage  # user_storage left as-is for now
 
 
 class StorageFactory:
@@ -39,20 +39,20 @@ class ServiceFactory:
 
     def __init__(
         self,
-        book_storage: Optional[BookStorage] = None,
+        book_repo: Optional[BookRepository] = None,
         user_storage: Optional[UserStorage] = None,
         data_dir: Optional[Path] = None,
     ):
-        self._book_storage = book_storage
+        self._book_repo = book_repo
         self._user_storage = user_storage
         self._storage_factory = (
             StorageFactory(data_dir=data_dir) if data_dir else StorageFactory()
         )
 
     def create_book_service(self) -> BookService:
-        """Create BookService, reusing injected storage if set."""
-        storage = self._book_storage or self._storage_factory.create_book_storage()
-        return BookService(storage=storage)
+        """Create BookService, reusing injected repository if set."""
+        repo = self._book_repo or self._storage_factory.create_book_storage()
+        return BookService(storage=repo)
 
     def create_user_service(self) -> UserService:
         """Create UserService, reusing injected storage if set."""
