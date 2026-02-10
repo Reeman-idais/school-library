@@ -1,190 +1,24 @@
-version: '3.8'
-
 services:
-  # MongoDB Database Service
-  mongodb:
-    image: mongo:7-alpine
-    container_name: school-library-mongodb
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME:-admin}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-password123}
-      MONGO_INITDB_DATABASE: ${MONGODB_DATABASE:-school_library}
-    ports:
-      - "${MONGODB_PORT:-27017}:27017"
-    volumes:
-      - mongodb-data:/data/db
-      - ./scripts/init_mongodb.js:/docker-entrypoint-initdb.d/init.js:ro
-    networks:
-      - library-network
-    healthcheck:
-      test: echo 'db.adminCommand("ping")' | mongosh localhost:27017/test -u ${MONGODB_USERNAME:-admin} -p ${MONGODB_PASSWORD:-password123} --authenticationDatabase admin
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    restart: unless-stopped
-    profiles:
-      - default
-      - prod
-      - dev
-
-  # Main application service
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     container_name: school-library-app
     ports:
-      - "${APP_PORT:-8000}:8000"
-    environment:
-      PYTHONUNBUFFERED: 1
-      PYTHONDONTWRITEBYTECODE: 1
-      PORT: 8000
-      DATABASE_TYPE: ${DATABASE_TYPE:-mongodb}
-      MONGODB_HOST: ${MONGODB_HOST:-mongodb}
-      MONGODB_PORT: ${MONGODB_PORT:-27017}
-      MONGODB_DATABASE: ${MONGODB_DATABASE:-school_library}
-      MONGODB_USERNAME: ${MONGODB_USERNAME:-admin}
-      MONGODB_PASSWORD: ${MONGODB_PASSWORD:-password123}
-      LOG_LEVEL: ${LOG_LEVEL:-INFO}
-      ENVIRONMENT: ${ENVIRONMENT:-development}
+      - "8000:8000"
+    env_file:
+      - .env
     volumes:
-      - ./data:/app/data
-      - ./logs:/app/logs
-    networks:
-      - library-network
-    healthcheck:
-      test: ["CMD", "python", "-c", "import http.client; conn = http.client.HTTPConnection('localhost', 8000); conn.request('GET', '/health'); conn.getresponse()"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 5s
+      - .:/app
     restart: unless-stopped
-    depends_on:
-      mongodb:
-        condition: service_healthy
-      app-init:
-        condition: service_completed_successfully
-    profiles:
-      - default
-      - prod
 
-  # Initialization service (runs migrations/setup)
-  app-init:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: school-library-init
-    command: python scripts/init_mongodb.py
-    environment:
-      PYTHONUNBUFFERED: 1
-      DATABASE_TYPE: ${DATABASE_TYPE:-mongodb}
-      MONGODB_HOST: ${MONGODB_HOST:-mongodb}
-      MONGODB_PORT: ${MONGODB_PORT:-27017}
-      MONGODB_DATABASE: ${MONGODB_DATABASE:-school_library}
-      MONGODB_USERNAME: ${MONGODB_USERNAME:-admin}
-      MONGODB_PASSWORD: ${MONGODB_PASSWORD:-password123}
-    volumes:
-      - ./data:/app/data
-    networks:
-      - library-network
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    profiles:
-      - init
-      - default
-
-  # Development service with mounted code
-  app-dev:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: school-library-dev
-    ports:
-      - "${APP_PORT:-8000}:8000"
-    environment:
-      PYTHONUNBUFFERED: 1
-      PYTHONDONTWRITEBYTECODE: 1
-      PORT: 8000
-      DATABASE_TYPE: ${DATABASE_TYPE:-mongodb}
-      MONGODB_HOST: ${MONGODB_HOST:-mongodb}
-      MONGODB_PORT: ${MONGODB_PORT:-27017}
-      MONGODB_DATABASE: ${MONGODB_DATABASE:-school_library}
-      MONGODB_USERNAME: ${MONGODB_USERNAME:-admin}
-      MONGODB_PASSWORD: ${MONGODB_PASSWORD:-password123}
+  app-seed:
+    build: .
+    image: sl-app:latest
+    env_file:
+      - .env
     volumes:
       - .:/app
-      - /app/__pycache__
-    networks:
-      - library-network
-    command: python web/server.py 8000
-    depends_on:
-      mongodb:
-        condition: service_healthy
+    command: python scripts/seed_mongodb.py
+    restart: "no"
     profiles:
-      - dev
-
-  # Testing service
-  app-test:
-    build:
-      context: .
-      dockerfile: Dockerfile.test
-    container_name: school-library-test
-    environment:
-      PYTHONUNBUFFERED: 1
-      DATABASE_TYPE: ${DATABASE_TYPE:-mongodb}
-      MONGODB_HOST: ${MONGODB_HOST:-mongodb}
-      MONGODB_PORT: ${MONGODB_PORT:-27017}
-      MONGODB_DATABASE: school_library_test
-      MONGODB_USERNAME: ${MONGODB_USERNAME:-admin}
-      MONGODB_PASSWORD: ${MONGODB_PASSWORD:-password123}
-    volumes:
-      - .:/app
-      - /app/__pycache__
-    networks:
-      - library-network
-    command: pytest -v --cov=. --cov-report=html
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    profiles:
-      - test
-
-  # Optional: Prometheus monitoring
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: school-library-prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus-data:/prometheus
-    networks:
-      - library-network
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-    profiles:
-      - monitoring
-
-  # Optional: Redis caching (if needed in future)
-  redis:
-    image: redis:7-alpine
-    container_name: school-library-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
-    networks:
-      - library-network
-    profiles:
-      - cache
-
-networks:
-  library-network:
-    driver: bridge
-
-volumes:
-  mongodb-data:
-  prometheus-data:
-  redis-data:
+      - seed
+    # Run with: docker compose run --rm app-seed

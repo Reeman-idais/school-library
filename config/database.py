@@ -22,7 +22,8 @@ class MongoDBConfig:
         self.database = os.getenv("MONGODB_DATABASE", "school_library")
         self.username = os.getenv("MONGODB_USERNAME", "")
         self.password = os.getenv("MONGODB_PASSWORD", "")
-        self.uri = os.getenv("MONGODB_URI", "")
+        # Allow both MONGODB_URI and MONGO_URI environment variable names
+        self.uri = os.getenv("MONGODB_URI", "") or os.getenv("MONGO_URI", "")
 
     @property
     def connection_string(self) -> str:

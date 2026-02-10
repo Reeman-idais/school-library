@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المكتبة المدرسية | School Library</title>
+    <link rel="stylesheet" href="/app/app.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- صفحة الدخول فقط -->
+        <section id="page-login" class="page active">
+            <div class="login-page">
+                <div class="login-box">
+                    <div class="login-header">
+                        <span class="login-icon">📚</span>
+                        <h1>المكتبة المدرسية</h1>
+                        <p>مرحباً بك، سجّل دخولك للبدء</p>
+                    </div>
+                    <form id="form-login" class="login-form">
+                        <div class="form-group">
+                            <label for="input-username">اسم المستخدم</label>
+                            <input type="text" id="input-username" placeholder="اسم المستخدم" required autocomplete="username">
+                        </div>
+                        <div class="form-group">
+                            <label for="input-password">كلمة المرور</label>
+                            <input type="password" id="input-password" placeholder="كلمة المرور" required autocomplete="current-password">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">دخول</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- لوحة المستخدم - صفحة واحدة في كل مرة -->
+        <section id="page-user" class="page">
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <span>📚</span>
+                    <h2>المكتبة</h2>
+                </div>
+                <nav class="sidebar-nav">
+                    <a href="#" class="nav-item active" data-page="user-books">جميع الكتب</a>
+                    <a href="#" class="nav-item" data-page="user-picked">كتبي المحجوزة</a>
+                </nav>
+                <div class="sidebar-footer">
+                    <button type="button" id="btn-user-logout" class="btn btn-outline btn-block">خروج</button>
+                </div>
+            </aside>
+            <main class="content-area">
+                <header class="content-header">
+                    <h1 id="user-page-title">جميع الكتب</h1>
+                    <span class="user-name" id="user-display-name"></span>
+                </header>
+                <div id="view-user-books" class="view active">
+                    <div class="toolbar-inline">
+                        <input type="text" id="search-user-books" class="search-input" placeholder="🔍 بحث (عنوان أو مؤلف)">
+                        <button type="button" id="btn-refresh-books" class="btn btn-secondary">🔄 تحديث</button>
+                    </div>
+                    <div id="books-list" class="books-grid"></div>
+                    <div id="books-empty" class="empty-state hidden">لا توجد كتب</div>
+                    <div id="books-loading" class="loading hidden">جاري التحميل...</div>
+                </div>
+                <div id="view-user-picked" class="view">
+                    <div id="my-picked-list"></div>
+                    <div id="my-picked-empty" class="empty-state">لم تحجز أي كتب بعد</div>
+                </div>
+            </main>
+        </section>
+
+        <!-- لوحة أمين المكتبة -->
+        <section id="page-librarian" class="page">
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <span>📋</span>
+                    <h2>إدارة المكتبة</h2>
+                </div>
+                <nav class="sidebar-nav">
+                    <a href="#" class="nav-item active" data-page="lib-books">جميع الكتب</a>
+                    <a href="#" class="nav-item" data-page="lib-picked">الكتب المحجوزة</a>
+                    <a href="#" class="nav-item" data-page="lib-add">إضافة كتاب</a>
+                    <a href="#" class="nav-item" data-page="lib-register">تسجيل مستخدم</a>
+                </nav>
+                <div class="sidebar-footer">
+                    <button type="button" id="btn-lib-logout" class="btn btn-outline btn-block">خروج</button>
+                </div>
+            </aside>
+            <main class="content-area">
+                <header class="content-header">
+                    <h1 id="lib-page-title">جميع الكتب</h1>
+                </header>
+                <div id="view-lib-books" class="view active">
+                    <div class="toolbar-inline">
+                        <input type="text" id="search-lib-books" class="search-input" placeholder="🔍 بحث (عنوان أو مؤلف)">
+                        <button type="button" id="btn-refresh-lib" class="btn btn-secondary">🔄 تحديث</button>
+                    </div>
+                    <div id="lib-books-list"></div>
+                </div>
+                <div id="view-lib-picked" class="view">
+                    <button type="button" id="btn-refresh-picked" class="btn btn-secondary">🔄 تحديث</button>
+                    <div id="lib-picked-list"></div>
+                </div>
+                <div id="view-lib-add" class="view">
+                    <form id="form-add-book" class="form-card">
+                        <h3>إضافة كتاب جديد</h3>
+                        <div class="form-group">
+                            <label for="add-id">رقم الكتاب</label>
+                            <input type="number" id="add-id" min="1000" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="add-title">العنوان</label>
+                            <input type="text" id="add-title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="add-author">المؤلف</label>
+                            <input type="text" id="add-author" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">إضافة</button>
+                    </form>
+                </div>
+                <div id="view-lib-register" class="view">
+                    <form id="form-register" class="form-card">
+                        <h3>تسجيل مستخدم</h3>
+                        <div class="form-group">
+                            <label for="reg-username">اسم المستخدم</label>
+                            <input type="text" id="reg-username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-role">الدور</label>
+                            <select id="reg-role">
+                                <option value="user">مستخدم</option>
+                                <option value="librarian">أمين مكتبة</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">تسجيل</button>
+                    </form>
+                </div>
+            </main>
+        </section>
+    </div>
+
+    <!-- نافذة تعديل الكتاب -->
+    <div id="modal-edit" class="modal">
+        <div class="modal-content">
+            <h3>تعديل الكتاب</h3>
+            <form id="form-edit-book">
+                <input type="hidden" id="edit-id">
+                <div class="form-group">
+                    <label for="edit-title">العنوان</label>
+                    <input type="text" id="edit-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-author">المؤلف</label>
+                    <input type="text" id="edit-author" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline btn-cancel-edit">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+    <script src="/app/app.js"></script>
+</body>
+</html>

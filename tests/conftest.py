@@ -2,17 +2,22 @@
 
 import sys
 from pathlib import Path
+from typing import Generator
 from unittest.mock import Mock
-
-import pytest
-
-from models.book import Book
-from models.role import Role
-from models.user import User
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
+
+import pytest  # noqa: E402
+
+from config.database import MongoDBConfig, MongoDBConnection  # noqa: E402
+from lib_logging.logger import get_logger  # noqa: E402
+from models.book import Book  # noqa: E402
+from models.role import Role  # noqa: E402
+from models.user import User  # noqa: E402
+from storage.mongodb.book_storage import MongoDBBookStorage  # noqa: E402
+from storage.mongodb.user_storage import MongoDBUserStorage  # noqa: E402
 
 # Import mongodb fixtures (kept in a separate file) so pytest discovers them
 try:
@@ -95,15 +100,6 @@ def mocker(pytestconfig):
     pass
 
 
-# --- MongoDB integration fixtures (inlined from conftest_mongodb.py) ---
-import os
-from typing import Generator
-
-from config.database import MongoDBConfig, MongoDBConnection
-from lib_logging.logger import get_logger
-from storage.mongodb.book_storage import MongoDBBookStorage
-from storage.mongodb.user_storage import MongoDBUserStorage
-
 logger = get_logger(__name__)
 
 
@@ -169,7 +165,7 @@ def mongodb_connection_check():
     """
     config = MongoDBConfig()
     try:
-        client = MongoDBConnection.get_connection(config)
+        MongoDBConnection.get_connection(config)
         logger.info("MongoDB is available for testing")
         return True
     except Exception as e:

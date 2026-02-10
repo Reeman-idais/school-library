@@ -11,18 +11,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy project files
-COPY pyproject.toml poetry.lock* ./
+# Copy project files needed for packaging (README required by poetry)
+COPY pyproject.toml poetry.lock* README.md ./
 
 # Install Poetry
 RUN pip install --no-cache-dir poetry
 
 # Install dependencies
 RUN poetry config virtualenvs.in-project true && \
-    poetry install --only main --no-interaction --no-ansi
+    poetry install --no-root --only main --no-interaction --no-ansi
 
 # Stage 2: Runtime
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -54,5 +54,5 @@ USER appuser
 # Expose port
 EXPOSE 8000
 
-# Default command (web server)
-CMD ["python", "web/server.py", "8000"]
+# Default command - run the included web app server which supports /health
+CMD ["python", "web/app_server.py", "8000"]

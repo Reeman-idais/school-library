@@ -28,14 +28,13 @@ ENV/
 env.bak/
 venv.bak/
 
-### IDEs
+### IDEs & Editors
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 .DS_Store
-.cursor/
 *.sublime-project
 *.sublime-workspace
 
@@ -133,3 +132,4 @@ gcloud/
 terraform/.terraform-placeholder
 
 *.md
+docker-compose.override.yml.example 

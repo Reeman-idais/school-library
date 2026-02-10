@@ -1,6 +1,5 @@
 """MongoDB fixtures and utilities for integration tests."""
 
-import os
 from typing import Generator
 
 import pytest
@@ -75,7 +74,7 @@ def mongodb_connection_check():
     """
     config = MongoDBConfig()
     try:
-        client = MongoDBConnection.get_connection(config)
+        MongoDBConnection.get_connection(config)
         logger.info("MongoDB is available for testing")
         return True
     except Exception as e:
