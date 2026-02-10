@@ -37,8 +37,9 @@ def validate_username(
     if len(username) > 50:
         return False, "Username must be at most 50 characters long"
 
-    # Check format: alphanumeric, underscore, hyphen allowed
-    if not re.match(r"^[a-zA-Z0-9_-]+$", username):
+    # Check format: allow letters (any language), numbers, underscore, hyphen
+    # Changed from r"^[a-zA-Z0-9_-]+$" to allow Unicode letters
+    if not re.match(r"^[\w\-]+$", username, re.UNICODE):
         return (
             False,
             "Username can only contain letters, numbers, underscores, and hyphens",
@@ -79,3 +80,37 @@ def validate_role(role_string: str) -> Tuple[bool, str, Optional[Role]]:
             f"Invalid role '{role_string}'. Valid roles are: {', '.join(valid_roles)}",
             None,
         )
+
+
+def validate_password(password: str) -> Tuple[bool, str]:
+    """
+    Validate password format (digits only).
+
+    Args:
+        password: Password to validate
+
+    Returns:
+        Tuple of (is_valid, error_message)
+        If valid: (True, "")
+        If invalid: (False, error_message)
+    """
+    if not password:
+        return False, "Password cannot be empty"
+
+    password = password.strip()
+
+    if not password:
+        return False, "Password cannot be empty or whitespace only"
+
+    # Check length (minimum 4 digits)
+    if len(password) < 4:
+        return False, "Password must be at least 4 digits long"
+
+    if len(password) > 20:
+        return False, "Password must be at most 20 digits long"
+
+    # Check format: digits only
+    if not re.match(r"^\d+$", password):
+        return False, "Password must contain only digits (numbers 0-9)"
+
+    return True, ""

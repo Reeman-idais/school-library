@@ -31,7 +31,7 @@ class MongoDBConfig:
             return str(self.uri)
 
         if self.username and self.password:
-            return f"mongodb://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+            return f"mongodb://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}?authSource=admin"
         return f"mongodb://{self.host}:{self.port}"
 
     def __repr__(self) -> str:

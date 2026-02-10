@@ -382,8 +382,8 @@
 
                     <h3>First Steps</h3>
                     <ol>
-                        <li>Register a user: <code>python main.py register-user --username alice --role user</code></li>
-                        <li>Register a librarian: <code>python main.py register-user --username bob --role librarian</code></li>
+                        <li>Register a user: <code>python main.py register-user --username alice --password 1234 --role user</code></li>
+                        <li>Register a librarian: <code>python main.py register-user --username bob --password 5678 --role librarian</code></li>
                         <li>Add a book (as librarian): <code>python main.py add-book --id 1001 --title "Python 101" --author "John Doe" --librarian</code></li>
                     </ol>
                 </div>
@@ -396,11 +396,17 @@
                         <p>Register a new user in the system. No role restriction.</p>
                         <div class="command-example">
                             <strong>Usage:</strong><br>
-                            <code>python main.py register-user --username &lt;username&gt; --role &lt;librarian|user&gt;</code>
+                            <code>python main.py register-user --username &lt;username&gt; --password &lt;digits&gt; --role &lt;librarian|user&gt;</code>
                         </div>
+                        <p><strong>Parameters:</strong></p>
+                        <ul>
+                            <li><code>--username</code>: Username (3-50 characters, letters/numbers/underscore/hyphen)</li>
+                            <li><code>--password</code>: Password (4-20 digits only, no letters or special characters)</li>
+                            <li><code>--role</code>: User role (librarian or user)</li>
+                        </ul>
                         <p><strong>Example:</strong></p>
-                        <pre><code>python main.py register-user --username alice --role user
-python main.py register-user --username bob --role librarian</code></pre>
+                        <pre><code>python main.py register-user --username alice --password 1234 --role user
+python main.py register-user --username bob --password 5678 --role librarian</code></pre>
                     </div>
 
                     <h3 class="collapsible" onclick="toggleCollapse(this)">2. add-book (Librarian Only)</h3>

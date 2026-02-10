@@ -537,6 +537,7 @@ def handle_return_book(
 
 def handle_register_user(
     username: str,
+    password: str,
     role_string: str,
     user_service: Optional[UserService] = None,
 ) -> int:
@@ -545,13 +546,14 @@ def handle_register_user(
 
     Args:
         username: Username
+        password: User password
         role_string: Role (librarian/user)
 
     Returns:
         Exit code (0 for success, 1 for failure)
     """
     svc = _resolve_user_service(user_service)
-    user, error_msg = svc.register_user(username, role_string)
+    user, error_msg = svc.register_user(username, password, role_string)
 
     if error_msg:
         print(f"ERROR: {error_msg}")

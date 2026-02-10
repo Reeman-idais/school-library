@@ -120,7 +120,7 @@ def test_model_creation():
         print("  ✓ Book model created successfully")
 
         # Create a user
-        user = User(id=1, username="testuser", role=Role.USER)
+        user = User(id=1, username="testuser", password="testpass", role=Role.USER)
         assert user.id == 1
         assert user.username == "testuser"
         print("  ✓ User model created successfully")

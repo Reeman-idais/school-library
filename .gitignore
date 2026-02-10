@@ -28,14 +28,13 @@ ENV/
 env.bak/
 venv.bak/
 
-### IDEs
+### IDEs & Editors
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 .DS_Store
-.cursor/
 *.sublime-project
 *.sublime-workspace
 
@@ -131,5 +130,8 @@ gcloud/
 *backup*
 *.bak
 terraform/.terraform-placeholder
+reports/
+docs/generated/
 
-*.md
+### Documentation (ignore markdown files in docs folder only)
+docs/*.md
