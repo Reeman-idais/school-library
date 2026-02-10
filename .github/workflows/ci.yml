@@ -146,12 +146,33 @@ jobs:
           poetry run pytest -v -m integration -r a
 
   # =======================
+  # Validate Docker Secrets
+  # =======================
+  validate-docker:
+    name: Validate Docker Secrets
+    runs-on: ubuntu-latest
+    needs: integration
+    steps:
+      - name: Check for Docker credentials when pushing to main
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            if [ -z "${{ secrets.DOCKER_USERNAME }}" ] || [ -z "${{ secrets.DOCKER_PASSWORD }}" ]; then
+              echo "Required Docker secrets (DOCKER_USERNAME/DOCKER_PASSWORD) are not set. Aborting build to avoid failing at push step.";
+              exit 1;
+            else
+              echo "Docker credentials present.";
+            fi
+          else
+            echo "Not a push to main; skipping Docker credential check.";
+          fi
+
+  # =======================
   # Build Docker Image
   # =======================
   build:
     name: Build Docker Image
     runs-on: ubuntu-latest
-    needs: [quality, unit, validate-secrets, integration]
+    needs: [quality, unit, validate-secrets, integration, validate-docker]
     permissions:
       contents: read
       packages: write
@@ -174,8 +195,8 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.docker_username }}
-          password: ${{ secrets.docker_secret }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Extract metadata
         id: meta
@@ -202,7 +223,7 @@ jobs:
         with:
           context: .
           file: ./${{ matrix.dockerfile }}
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && (secrets.DOCKER_USERNAME && secrets.DOCKER_PASSWORD) }}
           tags: ${{ steps.meta.outputs.tags }}${{ steps.suffix.outputs.suffix }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
@@ -253,8 +274,8 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.docker_username }}
-          password: ${{ secrets.docker_secret }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Deploy image
         id: deploy

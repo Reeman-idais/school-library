@@ -1,6 +1,8 @@
-"""Tests for CLI commands with mocked services."""
+"""
+Tests for CLI commands with mocked services.
+"""
 
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import pytest
 
@@ -18,68 +20,90 @@ from models.book import Book, BookStatus
 class TestCLICommands:
     """Test CLI command handlers with mocked services."""
 
-    @patch("cli.commands.BookService")
-    def test_handle_add_book_success(self, mock_book_service_class):
+    def test_handle_add_book_success(self):
         """Test successful book addition via CLI."""
-        # Setup mock
         mock_service = Mock()
         mock_book = Book.create(1001, "Test Book", "Test Author")
         mock_service.add_book.return_value = (mock_book, "")
-        mock_book_service_class.return_value = mock_service
 
-        # Execute command
         result = handle_add_book(
-            "1001", "Test Book", "Test Author", True, None, mock_service
+            "1001",
+            "Test Book",
+            "Test Author",
+            True,
+            None,
+            mock_service,
         )
 
-        # Assertions
         assert result == 0
-        mock_service.add_book.assert_called_once_with(1001, "Test Book", "Test Author")
+        mock_service.add_book.assert_called_once_with(
+            1001,
+            "Test Book",
+            "Test Author",
+        )
 
-    @patch("cli.commands.BookService")
-    def test_handle_add_book_validation_error(self, mock_book_service_class):
+    def test_handle_add_book_validation_error(self):
         """Test book addition with validation error."""
         mock_service = Mock()
         mock_service.add_book.return_value = (None, "Title cannot be empty")
-        mock_book_service_class.return_value = mock_service
 
-        result = handle_add_book("", "Test Author", True, None)
+        result = handle_add_book(
+            "",
+            "Test Book",
+            "Test Author",
+            True,
+            None,
+            mock_service,
+        )
 
         assert result == 1
 
-    @patch("cli.commands.BookService")
-    def test_handle_add_book_permission_denied(self, mock_book_service_class):
+    def test_handle_add_book_permission_denied(self):
         """Test book addition without librarian permission."""
-        # User tries to add book (not librarian)
-        result = handle_add_book("Test Book", "Test Author", False, "testuser")
+        mock_service = Mock()
 
-        assert result == 1  # Permission denied
+        result = handle_add_book(
+            "1001",
+            "Test Book",
+            "Test Author",
+            False,
+            "testuser",
+            mock_service,
+        )
 
-    @patch("cli.commands.BookService")
-    def test_handle_delete_book_success(self, mock_book_service_class):
+        assert result == 1
+        mock_service.add_book.assert_not_called()
+
+    def test_handle_delete_book_success(self):
         """Test successful book deletion."""
         mock_service = Mock()
         mock_service.delete_book.return_value = (True, "")
-        mock_book_service_class.return_value = mock_service
 
-        result = handle_delete_book("1", True, None)
+        result = handle_delete_book(
+            "1",
+            True,
+            None,
+            mock_service,
+        )
 
         assert result == 0
         mock_service.delete_book.assert_called_once_with(1)
 
-    @patch("cli.commands.BookService")
-    def test_handle_delete_book_not_found(self, mock_book_service_class):
+    def test_handle_delete_book_not_found(self):
         """Test deleting non-existent book."""
         mock_service = Mock()
         mock_service.delete_book.return_value = (False, "Book not found")
-        mock_book_service_class.return_value = mock_service
 
-        result = handle_delete_book("999", True, None)
+        result = handle_delete_book(
+            "999",
+            True,
+            None,
+            mock_service,
+        )
 
         assert result == 1
 
-    @patch("cli.commands.BookService")
-    def test_handle_list_books_success(self, mock_book_service_class):
+    def test_handle_list_books_success(self):
         """Test listing books."""
         mock_service = Mock()
         books = [
@@ -87,54 +111,72 @@ class TestCLICommands:
             Book.create(2, "Book 2", "Author 2"),
         ]
         mock_service.list_all_books.return_value = books
-        mock_book_service_class.return_value = mock_service
 
-        result = handle_list_books(False, "testuser")
+        result = handle_list_books(
+            False,
+            "testuser",
+            mock_service,
+        )
 
         assert result == 0
         mock_service.list_all_books.assert_called_once()
 
-    @patch("cli.commands.BookService")
-    def test_handle_pick_book_success(self, mock_book_service_class):
+    def test_handle_pick_book_success(self):
         """Test user picking a book."""
         mock_service = Mock()
         picked_book = Book.create(1, "Test Book", "Test Author")
         picked_book.status = BookStatus.PICKED
         mock_service.pick_book.return_value = (picked_book, "")
-        mock_book_service_class.return_value = mock_service
 
-        result = handle_pick_book("1", "testuser")
+        result = handle_pick_book(
+            "1",
+            "testuser",
+            mock_service,
+        )
 
         assert result == 0
         mock_service.pick_book.assert_called_once_with(1, "testuser")
 
-    @patch("cli.commands.BookService")
-    def test_handle_pick_book_not_available(self, mock_book_service_class):
+    def test_handle_pick_book_not_available(self):
         """Test picking unavailable book."""
         mock_service = Mock()
         mock_service.pick_book.return_value = (None, "Book is not available")
-        mock_book_service_class.return_value = mock_service
 
-        result = handle_pick_book("1", "testuser")
+        result = handle_pick_book(
+            "1",
+            "testuser",
+            mock_service,
+        )
 
         assert result == 1
 
-    @patch("cli.commands.BookService")
-    def test_handle_update_status_success(self, mock_book_service_class):
+    def test_handle_pick_book_invalid_id(self):
+        """Test picking book with invalid ID format."""
+        mock_service = Mock()
+
+        result = handle_pick_book(
+            "invalid",
+            "testuser",
+            mock_service,
+        )
+
+        assert result == 1
+        mock_service.pick_book.assert_not_called()
+
+    def test_handle_update_status_success(self):
         """Test updating book status."""
         mock_service = Mock()
         updated_book = Book.create(1, "Test Book", "Test Author")
         updated_book.status = BookStatus.BORROWED
         mock_service.update_book_status.return_value = (updated_book, "")
-        mock_book_service_class.return_value = mock_service
 
-        result = handle_update_status("1", "Borrowed", True, None)
+        result = handle_update_status(
+            "1",
+            "Borrowed",
+            True,
+            None,
+            mock_service,
+        )
 
         assert result == 0
         mock_service.update_book_status.assert_called_once()
-
-    def test_handle_pick_book_invalid_id(self):
-        """Test picking book with invalid ID format."""
-        result = handle_pick_book("invalid", "testuser")
-
-        assert result == 1  # Should fail due to invalid ID

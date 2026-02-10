@@ -10,6 +10,9 @@ sys.path.insert(0, str(project_root))
 
 import pytest  # noqa: E402
 
+# Ensure MongoDB fixtures in a separate module are loaded by pytest
+pytest_plugins = ["tests.conftest_mongodb"]
+
 from lib_logging.logger import get_logger  # noqa: E402
 from models.book import Book  # noqa: E402
 from models.role import Role  # noqa: E402
