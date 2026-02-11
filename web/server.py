@@ -11,6 +11,16 @@ from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlparse
 
+from dotenv import load_dotenv
+
+from lib_logging.logger import get_logger
+
+# Load environment variables from .env file
+_root = Path(__file__).resolve().parent.parent
+_env_file = _root / ".env"
+if _env_file.exists():
+    load_dotenv(_env_file)
+
 try:
     from prometheus_client import (
         CONTENT_TYPE_LATEST,
@@ -40,8 +50,10 @@ if PROMETHEUS_AVAILABLE:
     APPLICATION_ERRORS_TOTAL = Counter(
         "library_application_errors_total",
         "Total application errors",
-        ["component"],
     )
+
+# Logger
+logger = get_logger(__name__)
 
 
 class LibraryWebHandler(http.server.BaseHTTPRequestHandler):
@@ -107,15 +119,20 @@ class LibraryWebHandler(http.server.BaseHTTPRequestHandler):
 
         # Route handling
         if path == "/" or path == "/index.html":
-            self.serve_file("web/docs.html")
+            self.serve_file("web/app/index.html")
         elif path == "/docs.html":
             self.serve_file("web/docs.html")
         elif path == "/logs.html":
             self.serve_file("web/logs.html")
         elif path == "/api-docs" or path == "/api-docs/":
             self.serve_file("web/swagger.html")
+        elif path.startswith("/app/"):
+            # Serve static files from web/app/ directory
+            self.serve_file("web" + path)
         elif api_path == "/api/logs":
             self.serve_logs_api()
+        elif api_path == "/api/books":
+            self.serve_books_api()
         elif api_path == "/api/openapi.yaml":
             self.serve_openapi()
         elif path == "/metrics":
@@ -286,6 +303,42 @@ class LibraryWebHandler(http.server.BaseHTTPRequestHandler):
 
         return logs
 
+    def serve_books_api(self):
+        """Serve list of all books from database as JSON."""
+        try:
+            from core.factory import ServiceFactory
+
+            # Create service factory and get book service
+            factory = ServiceFactory()
+            book_service = factory.create_book_service()
+
+            # Log storage backend
+            storage_name = getattr(book_service, "storage", None)
+            logger.info(
+                f"Using storage backend: {storage_name.__class__.__name__ if storage_name else 'unknown'}"
+            )
+
+            # Get all books
+            books = book_service.list_all_books()
+
+            # Convert books to dictionaries for JSON serialization
+            books_data = [
+                {
+                    "id": book.id,
+                    "title": book.title,
+                    "author": book.author,
+                    "isbn": book.isbn,
+                    "status": book.status.value,
+                    "picked_by": book.picked_by,
+                }
+                for book in books
+            ]
+
+            self.send_json_response(books_data)
+        except Exception as e:
+            logger.error(f"Error serving books API: {e}")
+            self.send_error(500, f"Error retrieving books: {str(e)}")
+
     def handle_execute_api(self):
         """Handle command execution API (public endpoint)."""
         try:
@@ -363,6 +416,9 @@ class LibraryWebHandler(http.server.BaseHTTPRequestHandler):
             main_py = self.PROJECT_ROOT / "main.py"
             cmd = [sys.executable, str(main_py), command] + args
 
+            # Copy current environment (already has .env loaded at startup)
+            env = os.environ.copy()
+
             # Execute with timeout
             process = subprocess.run(
                 cmd,
@@ -370,6 +426,7 @@ class LibraryWebHandler(http.server.BaseHTTPRequestHandler):
                 text=True,
                 timeout=5,
                 cwd=str(self.PROJECT_ROOT),
+                env=env,
             )
 
             # Sanitize output for HTML

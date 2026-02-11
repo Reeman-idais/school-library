@@ -119,6 +119,12 @@ docker-status: ## Show Docker services status
 docker-metrics: ## Show Docker metrics (requires docker stats)
 	docker stats --no-stream
 
+# ======================== Database Utilities ========================
+
+docker-seed: ## Seed MongoDB running in Docker with sample data (uses defaults: admin/password123)
+	@echo "Seeding MongoDB in container 'school-library-mongodb'..."
+	docker exec -i school-library-mongodb mongosh -u admin -p password123 --authenticationDatabase admin --eval "db = db.getSiblingDB('school_library'); db.users.insertMany([{username:'admin', password:'1234', role:'LIBRARIAN'},{username:'tala', password:'1234', role:'USER'},{username:'reman', password:'4321', role:'USER'}]); db.books.insertMany([{id:1001, title:'A Brief History of Time', author:'Stephen Hawking'},{id:1002, title:'The Pragmatic Programmer', author:'Andrew Hunt, David Thomas'},{id:1003, title:'Clean Code', author:'Robert C. Martin'},{id:1004, title:'The Hobbit', author:'J.R.R. Tolkien'}]); print('Seeding completed.');"
+
 # ======================== CI/CD Targets ========================
 
 docker-ci: docker-build-test docker-test ## Run CI pipeline in Docker

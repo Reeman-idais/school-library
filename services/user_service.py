@@ -5,30 +5,36 @@ from typing import Optional, Tuple
 from lib_logging.logger import get_logger
 from models.role import Role
 from models.user import User
-from storage.user_storage import UserStorage
-from validation.user_validator import validate_role, validate_username
+from storage.interfaces import UserRepository
+from validation.user_validator import (
+    validate_password,
+    validate_role,
+    validate_username,
+)
 
 logger = get_logger(__name__)
 
 
 class UserService:
-    """Service for user-related operations."""
+    """Service for user-related operations.
 
-    def __init__(self, storage: Optional[UserStorage] = None):
-        """
-        Initialize user service.
+    Requires a UserRepository to be injected; no default repository is constructed
+    inside this service to keep dependencies explicit and testable.
+    """
 
-        Args:
-            storage: UserStorage instance (creates new if not provided)
-        """
-        self.storage = storage or UserStorage()
+    def __init__(self, storage: UserRepository):
+        """Initialize UserService with injected repository."""
+        self.storage: UserRepository = storage
 
-    def get_or_create_user(self, username: str, role: Role) -> Tuple[User, bool]:
+    def get_or_create_user(
+        self, username: str, password: str, role: Role
+    ) -> Tuple[User, bool]:
         """
         Get existing user or create a new one.
 
         Args:
             username: Username
+            password: User password
             role: User role
 
         Returns:
@@ -48,7 +54,7 @@ class UserService:
             return user, False
 
         # Create new user
-        user = self.storage.create_user(username, role)
+        user = self.storage.create_user(username, password, role)
         if user:
             logger.info(f"Created new user: '{username}' with role '{role.value}'")
             return user, True
@@ -73,13 +79,14 @@ class UserService:
         return None
 
     def register_user(
-        self, username: str, role_string: str
+        self, username: str, password: str, role_string: str
     ) -> Tuple[Optional[User], str]:
         """
         Register a new user.
 
         Args:
             username: Username
+            password: User password (digits only)
             role_string: Role as string (will be validated)
 
         Returns:
@@ -99,12 +106,18 @@ class UserService:
             logger.warning(f"Username validation failed: {error_msg}")
             return None, error_msg
 
+        # Validate password (digits only)
+        is_valid, error_msg = validate_password(password)
+        if not is_valid:
+            logger.warning(f"Password validation failed: {error_msg}")
+            return None, error_msg
+
         # Create user
         try:
             # `validate_role` may return (True, "", role) where role has type Optional[Role]
             # but after the `is_valid` check above, `role` must be non-None.
             assert role is not None
-            user, is_new = self.get_or_create_user(username, role)
+            user, is_new = self.get_or_create_user(username, password, role)
             if is_new:
                 return user, ""
             else:

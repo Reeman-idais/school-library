@@ -53,7 +53,9 @@ class MongoDBBookStorage:
                 {"$inc": {"sequence_value": 1}},
                 return_document=True,
             )
-            return result["sequence_value"]
+            if result is None:
+                raise RuntimeError("Book ID counter missing")
+            return int(result["sequence_value"])
         except PyMongoError as e:
             logger.error(f"Error getting next ID: {e}")
             raise

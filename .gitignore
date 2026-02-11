@@ -130,6 +130,8 @@ gcloud/
 *backup*
 *.bak
 terraform/.terraform-placeholder
+reports/
+docs/generated/
 
-*.md
-docker-compose.override.yml.example 
+### Documentation (ignore markdown files in docs folder only)
+docs/*.md
