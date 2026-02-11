@@ -54,6 +54,18 @@ poetry install
 
 # تشغيل التطبيق
 poetry run python main.py --help
+
+### تشغيل واجهة الويب (التطوير)
+```powershell
+# من جذر المشروع: شغّل باستخدام الـ venv المضمَّن (مُوصى به)
+.venv\Scripts\Activate.ps1
+python run_app.py
+
+# أو شغّل مباشرة باستخدام مفسِّر الـ venv دون تفعيل البيئة:
+.venv\Scripts\python.exe run_app.py
+```
+
+> ⚠️ إذا ظهرت رسالة "No module named 'web.app_server'": تأكد أنّك تستخدم مفسّر الـ Python من مجلد المشروع (`.venv`) أو أضف جذر المشروع إلى `PYTHONPATH` قبل التشغيل.
 ```
 
 #### الطريقة الثانية: Docker
