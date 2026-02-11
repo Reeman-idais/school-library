@@ -32,12 +32,22 @@ class MongoDBConfig:
             return self.uri
 
         if self.username and self.password:
-            return f"mongodb://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+            # ✅ FIX: add authSource=admin for proper authentication in CI
+            return (
+                f"mongodb://{self.username}:{self.password}"
+                f"@{self.host}:{self.port}/{self.database}"
+                f"?authSource=admin"
+            )
+
         return f"mongodb://{self.host}:{self.port}"
 
     def __repr__(self) -> str:
         """String representation without exposing credentials."""
-        return f"MongoDBConfig(host={self.host}, port={self.port}, database={self.database})"
+        return (
+            f"MongoDBConfig(host={self.host}, "
+            f"port={self.port}, "
+            f"database={self.database})"
+        )
 
 
 class MongoDBConnection:
@@ -84,16 +94,22 @@ class MongoDBConnection:
         """
         try:
             logger.info(f"Connecting to MongoDB: {config}")
+
             client = MongoClient(
                 config.connection_string,
                 serverSelectionTimeoutMS=5000,
                 connectTimeoutMS=10000,
                 retryWrites=True,
             )
+
             # Verify connection
             client.admin.command("ping")
-            logger.info(f"Successfully connected to MongoDB: {config.database}")
+
+            logger.info(
+                f"Successfully connected to MongoDB: {config.database}"
+            )
             return client
+
         except (ConnectionFailure, ServerSelectionTimeoutError) as e:
             logger.error(f"Failed to connect to MongoDB: {e}")
             raise
@@ -110,10 +126,12 @@ class MongoDBConnection:
             Database instance
         """
         client = cls.get_connection(config)
+
         if cls._config is None:
             if config is None:
                 config = MongoDBConfig()
             cls._config = config
+
         return client[cls._config.database]
 
     @classmethod
