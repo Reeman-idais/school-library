@@ -321,18 +321,8 @@ class LibraryWebHandler(http.server.BaseHTTPRequestHandler):
             # Get all books
             books = book_service.list_all_books()
 
-            # Convert books to dictionaries for JSON serialization
-            books_data = [
-                {
-                    "id": book.id,
-                    "title": book.title,
-                    "author": book.author,
-                    "isbn": book.isbn,
-                    "status": book.status.value,
-                    "picked_by": book.picked_by,
-                }
-                for book in books
-            ]
+            # Use the model's `to_dict()` (robust and forward-compatible)
+            books_data = [book.to_dict() for book in books]
 
             self.send_json_response(books_data)
         except Exception as e:
