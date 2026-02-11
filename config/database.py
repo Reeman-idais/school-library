@@ -105,9 +105,7 @@ class MongoDBConnection:
             # Verify connection
             client.admin.command("ping")
 
-            logger.info(
-                f"Successfully connected to MongoDB: {config.database}"
-            )
+            logger.info(f"Successfully connected to MongoDB: {config.database}")
             return client
 
         except (ConnectionFailure, ServerSelectionTimeoutError) as e:
