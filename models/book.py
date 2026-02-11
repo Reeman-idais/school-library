@@ -27,7 +27,14 @@ class Book:
     picked_by: Optional[str] = None  # Username who picked the book
 
     @classmethod
-    def create(cls, book_id: int, title: str, author: str, status: "Optional[BookStatus]" = None, picked_by: Optional[str] = None) -> "Book":
+    def create(
+        cls,
+        book_id: int,
+        title: str,
+        author: str,
+        status: "Optional[BookStatus]" = None,
+        picked_by: Optional[str] = None,
+    ) -> "Book":
         """Create a new book.
 
         Args:
