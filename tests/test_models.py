@@ -38,6 +38,13 @@ class TestBook:
         assert book.title == "Test Book"
         assert book.status == BookStatus.AVAILABLE
 
+    def test_create_with_status_and_picked_by(self):
+        """Book.create accepts optional status and picked_by and preserves them."""
+        book = Book.create(2, "Picked Book", "Author", status=BookStatus.PICKED, picked_by="alice")
+        assert book.id == 2
+        assert book.status == BookStatus.PICKED
+        assert book.picked_by == "alice"
+
 
 class TestUser:
     """Test User model."""
