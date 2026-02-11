@@ -29,22 +29,38 @@ if str(ROOT) not in sys.path:
 try:
     from web.app_server import run_server  # noqa: E402
 except ModuleNotFoundError:  # provide clear, actionable diagnostics
-    import sys
     import importlib.util
+    import sys
 
-    print("ERROR: could not import 'web.app_server' (ModuleNotFoundError).", file=sys.stderr)
+    print(
+        "ERROR: could not import 'web.app_server' (ModuleNotFoundError).",
+        file=sys.stderr,
+    )
     print("--- Diagnostic information ---", file=sys.stderr)
     print(f"Python executable: {sys.executable}", file=sys.stderr)
     print("First entries of sys.path:", file=sys.stderr)
     for p in sys.path[:8]:
         print(f"  {p}", file=sys.stderr)
     print("find_spec('web'):", importlib.util.find_spec("web"), file=sys.stderr)
-    print("find_spec('web.app_server'):", importlib.util.find_spec("web.app_server"), file=sys.stderr)
+    print(
+        "find_spec('web.app_server'):",
+        importlib.util.find_spec("web.app_server"),
+        file=sys.stderr,
+    )
     print("", file=sys.stderr)
     print("Quick fixes:", file=sys.stderr)
-    print("  - Activate the project venv and run: .venv\\Scripts\\Activate.ps1  then: python run_app.py", file=sys.stderr)
-    print("  - Or run directly with the venv interpreter: .venv\\Scripts\\python.exe run_app.py", file=sys.stderr)
-    print("  - Or ensure the project root is on PYTHONPATH before running.", file=sys.stderr)
+    print(
+        "  - Activate the project venv and run: .venv\\Scripts\\Activate.ps1  then: python run_app.py",
+        file=sys.stderr,
+    )
+    print(
+        "  - Or run directly with the venv interpreter: .venv\\Scripts\\python.exe run_app.py",
+        file=sys.stderr,
+    )
+    print(
+        "  - Or ensure the project root is on PYTHONPATH before running.",
+        file=sys.stderr,
+    )
     raise
 
 if __name__ == "__main__":

@@ -25,6 +25,7 @@ class Book:
     author: str
     status: BookStatus
     picked_by: Optional[str] = None  # Username who picked the book
+    isbn: Optional[str] = None  # Optional ISBN (backwards-compatible)
 
     @classmethod
     def create(
@@ -34,6 +35,7 @@ class Book:
         author: str,
         status: "Optional[BookStatus]" = None,
         picked_by: Optional[str] = None,
+        isbn: Optional[str] = None,
         **kwargs,
     ) -> "Book":
         """Create a new book.
@@ -44,6 +46,7 @@ class Book:
             author: book author
             status: optional BookStatus (defaults to AVAILABLE)
             picked_by: optional username who picked the book
+            isbn: optional ISBN string (forward-compatibility)
             **kwargs: ignore any additional fields (forward-compatibility)
 
         The factory is intentionally forgiving: callers (storage layers,
@@ -58,6 +61,7 @@ class Book:
             author=author.strip(),
             status=status or BookStatus.AVAILABLE,
             picked_by=picked_by,
+            isbn=isbn,
         )
 
     def to_dict(self) -> dict:
@@ -70,6 +74,8 @@ class Book:
         }
         if self.picked_by:
             result["picked_by"] = self.picked_by
+        if self.isbn:
+            result["isbn"] = self.isbn
         return result
 
     @classmethod
@@ -97,4 +103,5 @@ class Book:
             author=data["author"],
             status=status,
             picked_by=data.get("picked_by"),
+            isbn=data.get("isbn"),
         )
