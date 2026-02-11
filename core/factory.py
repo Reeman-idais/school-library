@@ -6,25 +6,30 @@ from typing import Optional
 from services.book_service import BookService
 from services.user_service import UserService
 from storage.book_storage import BookStorage
+from storage.factory import StorageFactory as ConfigurableStorageFactory
 from storage.user_storage import UserStorage
+from storage.interfaces import UserRepository, BookRepository
 
 
 class StorageFactory:
     """
     Factory for creating storage instances (Abstract Factory / Factory pattern).
-    Single place to configure persistence (e.g. JSON path, future DB).
+    Single place to configure persistence (supports JSON and MongoDB via env vars).
     """
 
     def __init__(self, data_dir: Optional[Path] = None):
         self.data_dir = data_dir
+        self._configurable_factory = ConfigurableStorageFactory()
 
-    def create_book_storage(self) -> BookStorage:
-        """Create BookStorage with configured data directory."""
-        return BookStorage(data_dir=self.data_dir) if self.data_dir else BookStorage()
+    def create_book_storage(self):
+        """Create BookStorage based on DATABASE_TYPE environment variable."""
+        # Use the configurable factory that respects env vars (JSON or MongoDB)
+        return self._configurable_factory.create_book_storage()
 
-    def create_user_storage(self) -> UserStorage:
-        """Create UserStorage with configured data directory."""
-        return UserStorage(data_dir=self.data_dir) if self.data_dir else UserStorage()
+    def create_user_storage(self):
+        """Create UserStorage based on DATABASE_TYPE environment variable."""
+        # Use the configurable factory that respects env vars (JSON or MongoDB)
+        return self._configurable_factory.create_user_storage()
 
 
 class ServiceFactory:
@@ -47,10 +52,14 @@ class ServiceFactory:
 
     def create_book_service(self) -> BookService:
         """Create BookService, reusing injected storage if set."""
-        storage = self._book_storage or self._storage_factory.create_book_storage()
+        storage: BookRepository = (
+            self._book_storage or self._storage_factory.create_book_storage()
+        )
         return BookService(storage=storage)
 
     def create_user_service(self) -> UserService:
         """Create UserService, reusing injected storage if set."""
-        storage = self._user_storage or self._storage_factory.create_user_storage()
+        storage: UserRepository = (
+            self._user_storage or self._storage_factory.create_user_storage()
+        )
         return UserService(storage=storage)

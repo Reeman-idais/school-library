@@ -11,13 +11,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy project files needed for packaging (README required by poetry)
-COPY pyproject.toml poetry.lock* README.md ./
+# Copy project files (required so Poetry can install the local package)
+COPY pyproject.toml poetry.lock* ./
+# Copy the rest of the project so the package is available for installation
+COPY . .
 
 # Install Poetry
 RUN pip install --no-cache-dir poetry
 
-# Install dependencies
+# Install dependencies (Poetry will install the package as well)
 RUN poetry config virtualenvs.in-project true && \
     poetry install --no-root --only main --no-interaction --no-ansi
 
@@ -54,5 +56,5 @@ USER appuser
 # Expose port
 EXPOSE 8000
 
-# Default command - run the included web app server which supports /health
-CMD ["python", "web/app_server.py", "8000"]
+# Default command: run the application web UI (recommended)
+CMD ["python", "run_app.py"]
