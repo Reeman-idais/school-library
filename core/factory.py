@@ -7,8 +7,8 @@ from services.book_service import BookService
 from services.user_service import UserService
 from storage.book_storage import BookStorage
 from storage.factory import StorageFactory as ConfigurableStorageFactory
+from storage.interfaces import BookRepository, UserRepository
 from storage.user_storage import UserStorage
-from storage.interfaces import UserRepository, BookRepository
 
 
 class StorageFactory:
@@ -52,14 +52,22 @@ class ServiceFactory:
 
     def create_book_service(self) -> BookService:
         """Create BookService, reusing injected storage if set."""
-        storage: BookRepository = (
-            self._book_storage or self._storage_factory.create_book_storage()
+        # `create_book_storage()` may be untyped in the underlying factory;
+        # cast to the `BookRepository` protocol so mypy understands compatibility.
+        from typing import cast
+
+        storage = cast(
+            BookRepository,
+            self._book_storage or self._storage_factory.create_book_storage(),
         )
         return BookService(storage=storage)
 
     def create_user_service(self) -> UserService:
         """Create UserService, reusing injected storage if set."""
-        storage: UserRepository = (
-            self._user_storage or self._storage_factory.create_user_storage()
+        from typing import cast
+
+        storage = cast(
+            UserRepository,
+            self._user_storage or self._storage_factory.create_user_storage(),
         )
         return UserService(storage=storage)

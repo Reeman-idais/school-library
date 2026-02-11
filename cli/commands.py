@@ -2,12 +2,12 @@
 
 from typing import Optional, Tuple
 
+from core.factory import ServiceFactory
 from lib_logging.logger import get_logger
 from models.book import BookStatus
 from models.role import Role
 from services.book_service import BookService
 from services.user_service import UserService
-from core.factory import ServiceFactory
 
 logger = get_logger(__name__)
 
