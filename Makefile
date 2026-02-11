@@ -88,6 +88,12 @@ docker-down: ## Stop containers
 docker-logs: ## View container logs
 	docker-compose logs -f app
 
+seed: ## Seed MongoDB (tries Docker Compose `app-seed` first, falls back to local script)
+	@echo "Seeding MongoDB..."
+	@docker compose build --quiet app || true
+	@docker compose run --rm app-seed || python scripts/seed_mongodb.py
+	@echo "Seeding finished."
+
 docker-shell: ## Open shell in running container
 	docker-compose exec app /bin/bash
 

@@ -3,6 +3,7 @@
 import os
 import sys
 import time
+from typing import List, Optional
 
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
@@ -101,6 +102,41 @@ def initialize_counters() -> None:
         raise
 
 
+def verify_db(expected_db_count: Optional[int] = None) -> None:
+    """Verify overall MongoDB instance statistics."""
+    try:
+        client = MongoDBConnection.get_connection()
+        db_names = client.list_database_names()
+        logger.info(f"MongoDB reports {len(db_names)} databases: {db_names}")
+        if expected_db_count is not None and expected_db_count != len(db_names):
+            logger.warning(
+                f"Expected {expected_db_count} databases but found {len(db_names)}"
+            )
+    except Exception as e:
+        logger.warning(f"Unable to list databases: {e}")
+
+
+def verify_and_create_collections(
+    expected_collections: Optional[List[str]] = None,
+) -> None:
+    """Ensure expected collections exist, create if missing."""
+    try:
+        db = MongoDBConnection.get_database()
+        existing = set(db.list_collection_names())
+        if expected_collections is None:
+            expected_collections = ["books", "users"]
+
+        for coll in expected_collections:
+            if coll not in existing:
+                db.create_collection(coll)
+                logger.info(f"Created missing collection '{coll}'")
+
+        logger.info(f"Collections now present: {sorted(db.list_collection_names())}")
+    except Exception as e:
+        logger.error(f"Error verifying/creating collections: {e}")
+        raise
+
+
 def main() -> None:
     """Main initialization function."""
     try:
@@ -121,6 +157,19 @@ def main() -> None:
 
         # Initialize counters
         initialize_counters()
+
+        # Verify expected DB count and collections (optional via env)
+        expected_db_count = int(os.getenv("MONGODB_EXPECTED_DB_COUNT", "0")) or None
+        expected_collections_env = os.getenv("MONGODB_EXPECTED_COLLECTIONS", "")
+        if expected_collections_env:
+            expected_collections = [
+                c.strip() for c in expected_collections_env.split(",") if c.strip()
+            ]
+        else:
+            expected_collections = None
+
+        verify_db(expected_db_count)
+        verify_and_create_collections(expected_collections)
 
         logger.info("MongoDB initialization completed successfully")
 

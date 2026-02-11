@@ -23,7 +23,8 @@ class MongoDBConfig:
         self.database = os.getenv("MONGODB_DATABASE", "school_library")
         self.username = os.getenv("MONGODB_USERNAME", "")
         self.password = os.getenv("MONGODB_PASSWORD", "")
-        self.uri = os.getenv("MONGODB_URI", "")
+        # Allow both MONGODB_URI and MONGO_URI environment variable names
+        self.uri = os.getenv("MONGODB_URI", "") or os.getenv("MONGO_URI", "")
 
     @property
     def connection_string(self) -> str:
@@ -37,7 +38,11 @@ class MongoDBConfig:
 
     def __repr__(self) -> str:
         """String representation without exposing credentials."""
-        return f"MongoDBConfig(host={self.host}, port={self.port}, database={self.database})"
+        return (
+            f"MongoDBConfig(host={self.host}, "
+            f"port={self.port}, "
+            f"database={self.database})"
+        )
 
 
 class MongoDBConnection:
@@ -90,10 +95,13 @@ class MongoDBConnection:
                 connectTimeoutMS=10000,
                 retryWrites=True,
             )
+
             # Verify connection
             client.admin.command("ping")
+
             logger.info(f"Successfully connected to MongoDB: {config.database}")
             return client
+
         except (ConnectionFailure, ServerSelectionTimeoutError) as e:
             logger.error(f"Failed to connect to MongoDB: {e}")
             raise
@@ -110,10 +118,12 @@ class MongoDBConnection:
             Database instance
         """
         client = cls.get_connection(config)
+
         if cls._config is None:
             if config is None:
                 config = MongoDBConfig()
             cls._config = config
+
         return client[cls._config.database]
 
     @classmethod

@@ -37,9 +37,7 @@ services:
 
   # Main application service
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     container_name: school-library-app
     ports:
       - "${APP_PORT:-8000}:8000"

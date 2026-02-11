@@ -8,7 +8,7 @@ from pymongo.errors import PyMongoError
 
 from config.database import MongoDBConnection
 from lib_logging.logger import get_logger
-from models.book import Book, BookStatus
+from models.book import Book
 
 logger = get_logger(__name__)
 
@@ -157,11 +157,14 @@ class MongoDBBookStorage:
 
     @staticmethod
     def _doc_to_book(doc: dict) -> Book:
-        """Convert MongoDB document to Book object."""
-        return Book(
-            id=doc["id"],
-            title=doc["title"],
-            author=doc["author"],
-            status=BookStatus(doc["status"]),
-            picked_by=doc.get("picked_by"),
-        )
+        """Convert MongoDB document to Book object using model deserializer.
+
+        Use `Book.from_dict` to centralize parsing/validation (handles string
+        IDs, unknown status strings and ignores extra fields). This makes the
+        storage layer more robust to schema drift.
+        """
+        # Ensure `id` is an int when stored as a string in some environments
+        if isinstance(doc.get("id"), str) and doc["id"].isdigit():
+            doc = dict(doc)
+            doc["id"] = int(doc["id"])
+        return Book.from_dict(doc)

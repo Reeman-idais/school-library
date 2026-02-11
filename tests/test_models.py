@@ -38,6 +38,31 @@ class TestBook:
         assert book.title == "Test Book"
         assert book.status == BookStatus.AVAILABLE
 
+    def test_create_with_status_and_picked_by(self):
+        """Book.create accepts optional status and picked_by and preserves them."""
+        book = Book.create(
+            2, "Picked Book", "Author", status=BookStatus.PICKED, picked_by="alice"
+        )
+        assert book.id == 2
+        assert book.status == BookStatus.PICKED
+        assert book.picked_by == "alice"
+
+    def test_create_ignores_extra_kwargs(self):
+        """Book.create should ignore unexpected kwargs (forward-compatible)."""
+        # simulate callers that pass full document or extra fields
+        book = Book.create(
+            3,
+            "Extra Book",
+            "Some Author",
+            status=BookStatus.AVAILABLE,
+            picked_by=None,
+            unexpected_field="x",
+            _meta={"a": 1},
+        )
+        assert book.id == 3
+        assert book.title == "Extra Book"
+        assert book.status == BookStatus.AVAILABLE
+
 
 class TestUser:
     """Test User model."""

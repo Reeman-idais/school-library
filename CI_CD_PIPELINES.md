@@ -1,0 +1,432 @@
+# CI/CD Pipeline Configuration
+
+This document describes the automated CI/CD pipelines for the Electronic Library Management System.
+
+## Overview
+
+Three main workflows are configured in GitHub Actions:
+
+```
+┌─────────────────┐
+│  Push / PR      │
+└────────┬────────┘
+         │
+         ▼
+┌──────────────────────────────────────┐
+│    CI - Build & Test (ci.yml)        │
+│  ┌────────────────────────────────┐  │
+│  │  Code Quality Checks           │  │
+│  └────────────────────────────────┘  │
+│  ┌────────────────────────────────┐  │
+│  │  Tests (3.10, 3.11, 3.12)     │  │
+│  └────────────────────────────────┘  │
+│  ┌────────────────────────────────┐  │
+│  │  Docker Image Build            │  │
+│  └────────────────────────────────┘  │
+└────────┬─────────────────────────────┘
+         │ ✅ Success
+         ▼
+┌──────────────────────────────────────┐
+│    CD - Deploy (cd.yml)              │
+│  ┌────────────────────────────────┐  │
+│  │  Deploy to Staging/Production  │  │
+│  └────────────────────────────────┘  │
+└──────────────────────────────────────┘
+
+┌─────────────────┐
+│  Tag pushed     │
+│  (v*.*.*)       │
+└────────┬────────┘
+         │
+         ▼
+┌──────────────────────────────────────┐
+│    Release (release.yml)             │
+│  ┌────────────────────────────────┐  │
+│  │  Create GitHub Release         │  │
+│  │  Build & Push Multi-platform   │  │
+│  │  Security Scan (Trivy)         │  │
+│  │  Notify Slack                  │  │
+│  └────────────────────────────────┘  │
+└──────────────────────────────────────┘
+```
+
+## CI Workflow (ci.yml)
+
+### Triggers
+
+- **Push**: Any branch matching `main`, `develop`, or `feature/**`
+- **Pull Request**: To `main` or `develop` branches
+
+### Jobs
+
+#### 1. Code Quality Checks
+
+Runs code quality tools on Python 3.10:
+
+- **Black**: Code formatting
+- **isort**: Import sorting
+- **flake8**: Style guide enforcement
+- **mypy**: Type checking
+- **pylint**: Code analysis (target: 7.0+)
+
+**Artifacts**: None (checks only)
+
+#### 2. Tests
+
+Runs comprehensive test suite on multiple Python versions:
+
+- Python 3.10
+- Python 3.11
+- Python 3.12
+
+**Test Commands**:
+- Unit tests: `pytest -m unit`
+- Integration tests: `pytest -m integration`
+- Coverage: `pytest --cov=. --cov-report=xml`
+
+**Artifacts**:
+- Coverage XML (uploaded to Codecov)
+- Test reports
+
+**Failure Handling**: 
+- Fails fast on any Python version failure
+- Coverage upload fails gracefully
+
+#### 3. Docker Image Build
+
+Builds two Docker images if quality and tests pass:
+
+- **Main Application** (`Dockerfile`)
+- **Test Runner** (`Dockerfile.test`)
+
+**Registry**: GitHub Container Registry (GHCR)
+
+**Pushing**: Only on `main` branch pushes
+
+**Tags**:
+- Git branch: `main`
+- Git commit: `sha-abc123`
+- Semantic version: `v1.0.0` (if applicable)
+
+---
+
+## CD Workflow (cd.yml)
+
+### Triggers
+
+- **Workflow Run**: After successful CI
+- **Manual Dispatch**: Manual trigger with environment selection
+
+### Outputs
+
+- **Staging URL**: `https://staging.example.com`
+- **Production URL**: `https://production.example.com`
+
+### Jobs
+
+#### 1. Determine Environment
+
+Decides whether to deploy to staging or production based on:
+- Manual dispatch input (if available)
+- Defaults to staging for CI auto-deployments
+
+#### 2. Deploy
+
+Performs deployment to selected environment:
+
+**Pre-requisites**:
+- Successful CI pipeline
+- Environment secrets configured
+
+**Environment Variables** (set in GitHub Secrets):
+```
+DEPLOY_HOST
+DEPLOY_USER
+DEPLOY_TOKEN
+```
+
+**Deployment Steps**:
+1. Pull latest image from registry
+2. Execute deployment script (`scripts/deploy.sh`)
+3. Perform health checks
+4. Return deployment URL
+
+**Notifications**:
+- Optional Slack notification on success/failure
+
+#### 3. Cleanup
+
+Removes old untagged images from registry:
+- Keeps latest 5 versions
+- Removes only untagged images
+
+---
+
+## Release Workflow (release.yml)
+
+### Triggers
+
+- **Git Tag**: Matching pattern `v*.*.*` or `release-*`
+
+Example:
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+### Jobs
+
+#### 1. Create Release
+
+Creates GitHub Release with:
+- Release notes (auto-generated or from CHANGELOG.md)
+- Release artifacts
+- Pre-release flag (for rc, alpha, beta versions)
+
+#### 2. Build & Push
+
+Multi-platform Docker image build:
+
+**Platforms**: 
+- Linux AMD64
+- Linux ARM64
+
+**Registry**: GitHub Container Registry (GHCR)
+
+**Tags**:
+- `latest`
+- `v1.0.0`
+- `1.0`
+- `1`
+- `sha-abc123`
+
+**Caching**: Buildkit cache for faster rebuilds
+
+#### 3. Security Scan
+
+Scans Docker image for vulnerabilities using Trivy:
+
+**Scanner**: aquasec/trivy
+**Format**: SARIF
+**Output**: GitHub Security tab
+
+#### 4. Notify
+
+Sends Slack notification with:
+- Release version
+- Docker image URL
+- Release link
+
+**Requires**: `SLACK_WEBHOOK_URL` secret
+
+---
+
+## Configuration
+
+### GitHub Secrets
+
+Required secrets for full CI/CD functionality:
+
+```
+GITHUB_TOKEN          # Auto-generated by GitHub
+DEPLOY_HOST          # Deployment server hostname
+DEPLOY_USER          # SSH username for deployment
+DEPLOY_TOKEN         # Deployment authentication token
+SLACK_WEBHOOK_URL    # Slack webhook for notifications
+```
+
+### Branch Protection Rules
+
+Recommended settings for `main` and `develop`:
+
+1. **Require status checks to pass**:
+   - CI - Code Quality
+   - CI - Test
+   - CI - Docker Build
+
+2. **Require pull request reviews**: 1-2 reviews
+
+3. **Dismiss stale pull request approvals**: Yes
+
+4. **Require conversation resolution**: Yes
+
+---
+
+## Usage Examples
+
+### Running CI Manually
+
+GitHub doesn't allow manual re-runs of push workflows, but you can:
+
+1. Close and reopen PR
+2. Add a comment (if using automatic triggers)
+3. Push an empty commit:
+   ```bash
+   git commit --allow-empty -m "Trigger CI" && git push
+   ```
+
+### Deploying to Staging
+
+**Manual deployment**:
+1. Go to Actions → CD workflow
+2. Click "Run workflow"
+3. Select "staging" environment
+4. Click "Run workflow"
+
+**Automatic deployment**:
+- Commits to `main` automatically trigger staging deployment
+
+### Creating a Release
+
+**Via Git**:
+```bash
+# Create and push tag
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+**Via GitHub**:
+1. Go to Releases → Create new release
+2. Enter version tag (e.g., `v1.0.0`)
+3. Add release notes
+4. Publish release
+
+---
+
+## Monitoring & Debugging
+
+### View Workflow Runs
+
+GitHub Actions tab → Select workflow → View runs
+
+### Check Status Badges
+
+Add to README.md:
+
+```markdown
+![CI](https://github.com/Reeman-idais/school-library/actions/workflows/ci.yml/badge.svg)
+![CD](https://github.com/Reeman-idais/school-library/actions/workflows/cd.yml/badge.svg)
+![Release](https://github.com/Reeman-idais/school-library/actions/workflows/release.yml/badge.svg)
+```
+
+### View Logs
+
+For failed jobs:
+1. Actions tab → Failed workflow
+2. Click job name
+3. Expand step for detailed logs
+
+### Common Issues
+
+**Tests failing locally but passing in CI**:
+- Python version mismatch
+- Environment variable differences
+- Path issues
+
+**Deployment failing**:
+- Missing secrets
+- Invalid host/credentials
+- Health check timeout
+
+**Image build failing**:
+- Missing dependencies in Dockerfile
+- Resource constraints
+- Network issues
+
+---
+
+## Best Practices
+
+### Committing
+
+1. Create feature branch: `git checkout -b feature/my-feature`
+2. Make commits with clear messages
+3. Push to remote branch
+4. Create pull request
+
+### Pull Requests
+
+1. Target `develop` (not `main`)
+2. Include description of changes
+3. Wait for CI to pass
+4. Request reviews
+5. Address review comments
+6. Merge when approved
+
+### Releases
+
+1. Increment version number following semver
+2. Update CHANGELOG.md
+3. Create tag with version
+4. Push tag to trigger release workflow
+5. Add release notes on GitHub
+
+---
+
+## Troubleshooting
+
+### Workflow Stuck
+
+- Check runner status
+- View workflow logs for blocking steps
+- Cancel and re-run workflow
+
+### Tests Failing
+
+- Review test logs
+- Check for flaky tests
+- Verify environment variables
+- Run locally with `make test`
+
+### Image Build Failing
+
+- Check Docker daemon status
+- Review Dockerfile syntax
+- Verify all dependencies available
+- Clear Docker build cache: `docker builder prune`
+
+### Deployment Failing
+
+- Verify secrets configured
+- Check deployment host availability
+- Review deployment script
+- Check application logs on target
+
+---
+
+## Advanced Configuration
+
+### Custom Runners
+
+For self-hosted runners:
+1. Add runner to repository
+2. Update workflow to use: `runs-on: [self-hosted]`
+
+### Slack Notifications
+
+Set Slack webhook URL:
+1. Create Slack App → Get webhook URL
+2. Add to GitHub Secrets as `SLACK_WEBHOOK_URL`
+
+### Email Notifications
+
+Integrate with email service:
+1. Add step to CI/CD workflow
+2. Use SendGrid or similar API
+
+### Database Migrations
+
+For CD with database:
+1. Add migration step before deployment
+2. Handle rollback on failure
+3. Test migrations in staging first
+
+---
+
+## Next Steps
+
+1. Commit all workflow files to repository
+2. Configure GitHub Secrets
+3. Set branch protection rules
+4. Create test tags to verify workflows
+5. Update README with deployment instructions

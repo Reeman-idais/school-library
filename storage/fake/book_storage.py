@@ -17,7 +17,7 @@ class FakeBookStorage:
 
     def __init__(self):
         self._books: List[Book] = []
-        self._next_id = 1
+        self._next_id: int = 1
 
     def load_books(self) -> List[Book]:
         return list(self._books)

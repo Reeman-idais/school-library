@@ -21,10 +21,10 @@ RUN pip install --no-cache-dir poetry
 
 # Install dependencies (Poetry will install the package as well)
 RUN poetry config virtualenvs.in-project true && \
-    poetry install --only main --no-interaction --no-ansi
+    poetry install --no-root --only main --no-interaction --no-ansi
 
 # Stage 2: Runtime
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 

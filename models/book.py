@@ -27,14 +27,37 @@ class Book:
     picked_by: Optional[str] = None  # Username who picked the book
 
     @classmethod
-    def create(cls, book_id: int, title: str, author: str) -> "Book":
-        """Create a new book with specified ID and AVAILABLE status."""
+    def create(
+        cls,
+        book_id: int,
+        title: str,
+        author: str,
+        status: "Optional[BookStatus]" = None,
+        picked_by: Optional[str] = None,
+        **kwargs,
+    ) -> "Book":
+        """Create a new book.
+
+        Args:
+            book_id: numeric identifier for the book
+            title: book title
+            author: book author
+            status: optional BookStatus (defaults to AVAILABLE)
+            picked_by: optional username who picked the book
+            **kwargs: ignore any additional fields (forward-compatibility)
+
+        The factory is intentionally forgiving: callers (storage layers,
+        deserializers or third-party code) may pass extra keys — silently
+        ignore them to remain robust across data shape changes.
+        """
+        # Accept and ignore unexpected kwargs to be defensive against callers
+        # that pass the whole document (e.g. `Book.create(**doc)`).
         return cls(
             id=book_id,
             title=title.strip(),
             author=author.strip(),
-            status=BookStatus.AVAILABLE,
-            picked_by=None,
+            status=status or BookStatus.AVAILABLE,
+            picked_by=picked_by,
         )
 
     def to_dict(self) -> dict:

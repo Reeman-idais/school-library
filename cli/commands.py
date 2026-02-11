@@ -2,6 +2,7 @@
 
 from typing import Optional, Tuple
 
+from core.factory import ServiceFactory
 from lib_logging.logger import get_logger
 from models.book import BookStatus
 from models.role import Role
@@ -13,12 +14,17 @@ logger = get_logger(__name__)
 
 def _resolve_book_service(book_service: Optional[BookService]) -> BookService:
     """Resolve BookService (injected or default). Enables DI and backward-compat tests."""
-    return book_service if book_service is not None else BookService()
+    if book_service is not None:
+        return book_service
+    # Use ServiceFactory so the service is constructed with a proper storage
+    return ServiceFactory().create_book_service()
 
 
 def _resolve_user_service(user_service: Optional[UserService]) -> UserService:
     """Resolve UserService (injected or default)."""
-    return user_service if user_service is not None else UserService()
+    if user_service is not None:
+        return user_service
+    return ServiceFactory().create_user_service()
 
 
 def _check_role_permission(required_role: Role, provided_role: Optional[Role]) -> bool:

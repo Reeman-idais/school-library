@@ -4,23 +4,27 @@ import re
 from typing import Optional, Tuple
 
 from models.role import Role
-from storage.user_storage import UserStorage
+from storage.interfaces import UserRepository
 
 
 def validate_username(
-    username: str, user_storage: Optional[UserStorage] = None
+    username: str, user_storage: Optional[UserRepository] = None
 ) -> Tuple[bool, str]:
     """
     Validate username format and uniqueness.
 
     Args:
         username: Username to validate
-        user_storage: Optional UserStorage instance to check uniqueness
+        user_storage: Optional UserRepository (protocol) used to check uniqueness
 
     Returns:
         Tuple of (is_valid, error_message)
         If valid: (True, "")
         If invalid: (False, error_message)
+
+    Notes:
+        Use the repository protocol rather than a concrete implementation so
+        callers (services, tests, fakes) can pass any compatible storage.
     """
     if not username:
         return False, "Username cannot be empty"

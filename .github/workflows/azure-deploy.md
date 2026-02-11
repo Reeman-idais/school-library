@@ -1,0 +1,49 @@
+# نشر على Azure App Service - فرع frontend
+# Deploy to Azure App Service - frontend branch
+# يتطلب إعداد Azure credentials كـ GitHub secrets
+
+name: Deploy to Azure (Frontend)
+
+on:
+  push:
+    branches:
+      - feature/frontend-ui
+  workflow_dispatch:
+
+env:
+  AZURE_WEBAPP_NAME: school-library
+  PYTHON_VERSION: '3.10'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry config virtualenvs.create false
+          poetry install --only main --no-interaction
+
+      - name: Create startup script
+        run: |
+          echo 'python run_app.py' > start.sh
+          chmod +x start.sh
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: .
+        continue-on-error: true
