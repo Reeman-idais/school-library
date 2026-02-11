@@ -81,7 +81,25 @@
       return { success: false, stderr: err.message };
     }
   }
-
+  // Try fetching books directly from the REST API (/api/books).
+  // Falls back to the CLI execution API when not available.
+  async function fetchBooksFromServer() {
+    try {
+      const res = await fetch('/api/books');
+      if (!res.ok) throw new Error('Not available');
+      const data = await res.json();
+      // normalize keys to match parseBooks expectations
+      return data.map(b => ({
+        id: b.id,
+        title: b.title,
+        author: b.author,
+        status: b.status || 'Available',
+        pickedBy: b.picked_by || null,
+      }));
+    } catch (err) {
+      return null; // signal to use CLI fallback
+    }
+  }
   // ========== تحليل مخرجات CLI ==========
   function parseBooks(stdout) {
     const books = [];
@@ -163,18 +181,25 @@
     if (empty) empty.classList.add('hidden');
     list.innerHTML = '';
 
-    const r = await api('list-books', ['--username', currentUsername]);
-    if (loading) loading.classList.add('hidden');
+    // Try REST API first
+    const serverBooks = await fetchBooksFromServer();
+    if (serverBooks) {
+      if (loading) loading.classList.add('hidden');
+      allUserBooks = serverBooks;
+    } else {
+      const r = await api('list-books', ['--username', currentUsername]);
+      if (loading) loading.classList.add('hidden');
 
-    if (!r.success) {
-      if (empty) {
-        empty.textContent = r.stderr || 'حدث خطأ';
-        empty.classList.remove('hidden');
+      if (!r.success) {
+        if (empty) {
+          empty.textContent = r.stderr || 'حدث خطأ';
+          empty.classList.remove('hidden');
+        }
+        return;
       }
-      return;
-    }
 
-    allUserBooks = parseBooks(r.stdout);
+      allUserBooks = parseBooks(r.stdout);
+    }
     const searchQ = ($('#search-user-books') || {}).value || '';
     const books = filterBooks(allUserBooks, searchQ);
     if (books.length === 0) {
@@ -292,6 +317,14 @@
   }
 
   async function loadLibBooks() {
+    // Try REST API first
+    const serverBooks = await fetchBooksFromServer();
+    if (serverBooks) {
+      allLibBooks = serverBooks;
+      renderLibBooksTable(allLibBooks);
+      return;
+    }
+
     const r = await api('list-books', ['--librarian']);
     if (!r.success) {
       const container = $('#lib-books-list');
@@ -462,6 +495,25 @@
       }
     });
 
+    // نموذج تسجيل المستخدم
+    $('#form-register')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = $('#reg-username').value.trim();
+      const role = $('#reg-role').value.trim();
+      if (!username || !role) {
+        toast('املأ جميع الحقول', 'error');
+        return;
+      }
+      const password = ($('#reg-password').value || '').trim();
+      const r = await api('register-user', ['--username', username, '--password', password, '--role', role]);
+      if (r.success) {
+        toast('تم تسجيل المستخدم بنجاح', 'success');
+        e.target.reset();
+      } else {
+        toast(r.stderr || 'حدث خطأ', 'error');
+      }
+    });
+
     // تعديل الكتاب
     $('#form-edit-book')?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -532,12 +584,17 @@
     $('#form-register')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const username = $('#reg-username').value.trim();
+      const password = $('#reg-password').value.trim();
       const role = $('#reg-role').value;
-      if (!username) {
-        toast('أدخل اسم المستخدم', 'error');
+      if (!username || !password) {
+        toast('أدخل اسم المستخدم وكلمة المرور', 'error');
         return;
       }
-      const r = await api('register-user', ['--username', username, '--role', role]);
+      if (!/^\d+$/.test(password)) {
+        toast('كلمة المرور يجب أن تكون أرقاماً فقط', 'error');
+        return;
+      }
+      const r = await api('register-user', ['--username', username, '--password', password, '--role', role]);
       if (r.success) {
         toast('تم التسجيل', 'success');
         e.target.reset();

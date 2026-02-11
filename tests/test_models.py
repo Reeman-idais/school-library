@@ -44,14 +44,16 @@ class TestUser:
 
     def test_create_user(self):
         """Test creating a user."""
-        user = User.create("testuser", Role.USER)
+        user = User.create("testuser", "1234", Role.USER)
         assert user.username == "testuser"
+        assert user.password == "1234"
         assert user.role == Role.USER
         assert user.id is not None
 
     def test_user_to_dict(self):
         """Test user serialization."""
-        user = User.create("testuser", Role.USER)
+        user = User.create("testuser", "1234", Role.USER)
         user_dict = user.to_dict()
         assert user_dict["username"] == "testuser"
+        assert user_dict["password"] == "1234"
         assert user_dict["role"] == "user"

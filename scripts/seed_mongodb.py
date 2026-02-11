@@ -1,119 +1,63 @@
-"""Seed MongoDB with sample data from data/*.json.
+#!/usr/bin/env python3
+"""Seed MongoDB with sample books and users for local development."""
 
-Usage:
-  # From host (uses .env if present):
-  python scripts/seed_mongodb.py
-
-  # Inside container (uses container env):
-  docker exec -it school-library-app /app/.venv/bin/python scripts/seed_mongodb.py
-"""
-
-import json
-import logging
-import os
-
-# Ensure project root is on sys.path when executed inside container
 import sys
+import time
 from pathlib import Path
-from typing import Any, Dict, List
 
-from pymongo import UpdateOne
+# Make sure project root is importable
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
 
-from config.database import MongoDBConfig, MongoDBConnection
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("seed")
-
-ROOT = Path(__file__).resolve().parents[1]
-DATA_DIR = ROOT / "data"
-
-
-def load_json(file: Path) -> List[Dict[str, Any]]:
-    if not file.exists():
-        logger.warning("Data file %s not found", file)
-        return []
-    with file.open("r", encoding="utf-8") as fh:
-        return json.load(fh)
-
-
-def seed_books(db, books: List[Dict[str, Any]]):
-    if not books:
-        logger.info("No books to seed")
-        return
-
-    ops = []
-    max_id = 0
-    for b in books:
-        ops.append(UpdateOne({"id": b.get("id")}, {"$set": b}, upsert=True))
-        try:
-            if isinstance(b.get("id"), int):
-                max_id = max(max_id, b.get("id", 0))
-        except Exception:
-            pass
-
-    result = db["books"].bulk_write(ops)
-    logger.info(
-        "Books seeded: matched=%s, upserted=%s",
-        result.matched_count,
-        len(result.upserted_ids),
-    )
-
-    # Ensure counter at least max_id
-    if max_id > 0:
-        db["book_id_counter"].update_one(
-            {"_id": "book_id"}, {"$max": {"sequence_value": max_id}}, upsert=True
-        )
-        logger.info("Book ID counter set to at least %d", max_id)
-
-
-def seed_users(db, users: List[Dict[str, Any]]):
-    if not users:
-        logger.info("No users to seed")
-        return
-
-    ops = []
-    max_user_id = 0
-    numeric_ids_seen = False
-
-    for u in users:
-        # prefer username uniqueness
-        ops.append(UpdateOne({"username": u.get("username")}, {"$set": u}, upsert=True))
-        uid = u.get("id")
-        if isinstance(uid, int):
-            numeric_ids_seen = True
-            max_user_id = max(max_user_id, uid)
-
-    result = db["users"].bulk_write(ops)
-    logger.info(
-        "Users seeded: matched=%s, upserted=%s",
-        result.matched_count,
-        len(result.upserted_ids),
-    )
-
-    # Update numeric user counter when numeric IDs present
-    if numeric_ids_seen and max_user_id > 0:
-        db["user_id_counter"].update_one(
-            {"_id": "user_id"}, {"$max": {"sequence_value": max_user_id}}, upsert=True
-        )
-        logger.info("User ID counter set to at least %d", max_user_id)
+from config.database import MongoDBConfig, MongoDBConnection  # noqa: E402
+from models.role import Role  # noqa: E402
+from storage.mongodb.book_storage import MongoDBBookStorage  # noqa: E402
+from storage.mongodb.user_storage import MongoDBUserStorage  # noqa: E402
 
 
 def main():
-    config = MongoDBConfig()
-    logger.info("MongoDB config: %s", config)
-    client = MongoDBConnection.get_connection(config)
-    db = client[config.database]
+    print("Seeding MongoDB with sample data...")
+    cfg = MongoDBConfig()
+    # Wait briefly for DB to be ready
+    for _ in range(10):
+        try:
+            MongoDBConnection.get_connection(cfg).admin.command("ping")
+            break
+        except Exception:
+            print("Waiting for MongoDB...")
+            time.sleep(1)
 
-    books = load_json(DATA_DIR / "books.json")
-    users = load_json(DATA_DIR / "users.json")
+    book_storage = MongoDBBookStorage()
+    user_storage = MongoDBUserStorage()
 
-    seed_books(db, books)
-    seed_users(db, users)
+    # Add sample users
+    sample_users = [
+        ("admin", "1234", Role.LIBRARIAN),
+        ("tala", "1234", Role.USER),
+        ("reman", "4321", Role.USER),
+    ]
+    for username, password, role in sample_users:
+        if not user_storage.user_exists(username):
+            user_storage.create_user(username, password, role)
+            print(f"Added user: {username}")
 
-    logger.info("Seeding completed")
+    # Add sample books
+    sample_books = [
+        (1001, "A Brief History of Time", "Stephen Hawking"),
+        (1002, "The Pragmatic Programmer", "Andrew Hunt, David Thomas"),
+        (1003, "Clean Code", "Robert C. Martin"),
+        (1004, "The Hobbit", "J.R.R. Tolkien"),
+    ]
+    for bid, title, author in sample_books:
+        # Avoid duplicates by ID
+        if book_storage.get_book_by_id(bid) is None:
+            from models.book import Book
+
+            b = Book.create(bid, title, author)
+            book_storage.add_book(b)
+            print(f"Added book: {title} ({bid})")
+
+    print("Seeding completed.")
 
 
 if __name__ == "__main__":

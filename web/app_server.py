@@ -10,8 +10,16 @@ import os
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 # إضافة المجلد الأب للمسار
 PROJECT_ROOT = Path(__file__).parent.parent
+
+# Load environment variables from .env file
+env_file = PROJECT_ROOT / ".env"
+if env_file.exists():
+    load_dotenv(env_file)
+
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -47,7 +55,6 @@ class AppWebHandler(LibraryWebHandler):
             self.wfile.write(b'{"status":"ok"}')
             return
 
-        # كل المسارات الأخرى - المعالج الأصلي
         super().do_GET()
 
 

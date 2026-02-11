@@ -1,24 +1,79 @@
 services:
+  # MongoDB Database Service
+  mongodb:
+    image: mongo:7
+    container_name: school-library-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-password123}
+      MONGO_INITDB_DATABASE: ${MONGODB_DATABASE:-school_library}
+    ports:
+      - "${MONGODB_PORT:-27017}:27017"
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - library-network
+    healthcheck:
+      test: echo 'db.adminCommand("ping")' | mongosh localhost:27017/test -u ${MONGODB_USERNAME:-admin} -p ${MONGODB_PASSWORD:-password123} --authenticationDatabase admin
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # Seed (development only) — runs once after MongoDB is healthy when using the 'dev' profile
+  mongodb-seed:
+    image: mongo:7
+    container_name: school-library-mongodb-seed
+    profiles:
+      - dev
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    entrypoint: ["sh","-c","mongosh -u ${MONGODB_USERNAME:-admin} -p ${MONGODB_PASSWORD:-password123} --authenticationDatabase admin mongodb:${MONGODB_PORT:-27017}/${MONGODB_DATABASE:-school_library} --eval \"db = db.getSiblingDB('${MONGODB_DATABASE:-school_library}'); if (db.users.countDocuments() === 0) { db.users.insertMany([{username:'admin', password:'1234', role:'LIBRARIAN'},{username:'tala', password:'1234', role:'USER'},{username:'reman', password:'4321', role:'USER'}]); db.books.insertMany([{id:1001, title:'A Brief History of Time', author:'Stephen Hawking'},{id:1002, title:'The Pragmatic Programmer', author:'Andrew Hunt, David Thomas'},{id:1003, title:'Clean Code', author:'Robert C. Martin'},{id:1004, title:'The Hobbit', author:'J.R.R. Tolkien'}]); print(\'Seeding completed.\'); } else { print(\'DB already seeded\'); }\""]
+    networks:
+      - library-network
+    restart: "no"
+
+  # Main application service
   app:
     build: .
     container_name: school-library-app
     ports:
-      - "8000:8000"
-    env_file:
-      - .env
+      - "${APP_PORT:-8000}:8000"
+    environment:
+      PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 1
+      PORT: 8000
+      DATABASE_TYPE: ${DATABASE_TYPE:-mongodb}
+      MONGODB_HOST: ${MONGODB_HOST:-mongodb}
+      MONGODB_PORT: ${MONGODB_PORT:-27017}
+      MONGODB_DATABASE: ${MONGODB_DATABASE:-school_library}
+      MONGODB_USERNAME: ${MONGODB_USERNAME:-admin}
+      MONGODB_PASSWORD: ${MONGODB_PASSWORD:-password123}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
     volumes:
-      - .:/app
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - library-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import http.client; conn = http.client.HTTPConnection('localhost', 8000); conn.request('GET', '/health'); conn.getresponse()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
     restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
 
-  app-seed:
-    build: .
-    image: sl-app:latest
-    env_file:
-      - .env
-    volumes:
-      - .:/app
-    command: python scripts/seed_mongodb.py
-    restart: "no"
-    profiles:
-      - seed
-    # Run with: docker compose run --rm app-seed
+
+
+networks:
+  library-network:
+    driver: bridge
+
+volumes:
+  mongodb-data:

@@ -10,7 +10,7 @@ logger = get_logger(__name__)
 class StorageFactory:
     """Factory for creating storage implementations based on configuration."""
 
-    _instances = {}  # Cache for singleton pattern
+    _instances: dict[str, object] = {}  # Cache for singleton pattern
 
     @classmethod
     def create_book_storage(cls):
@@ -30,6 +30,14 @@ class StorageFactory:
             if "book_storage_json" not in cls._instances:
                 cls._instances["book_storage_json"] = BookStorage()
             return cls._instances["book_storage_json"]
+
+        elif storage_type == "fake":
+            # Use in-memory, deterministic fake storage for unit tests and CI
+            from storage.fake.book_storage import FakeBookStorage
+
+            if "book_storage_fake" not in cls._instances:
+                cls._instances["book_storage_fake"] = FakeBookStorage()
+            return cls._instances["book_storage_fake"]
 
         else:
             logger.error(f"Unknown database type: {storage_type}")
@@ -53,6 +61,13 @@ class StorageFactory:
             if "user_storage_json" not in cls._instances:
                 cls._instances["user_storage_json"] = UserStorage()
             return cls._instances["user_storage_json"]
+
+        elif storage_type == "fake":
+            from storage.fake.user_storage import FakeUserStorage
+
+            if "user_storage_fake" not in cls._instances:
+                cls._instances["user_storage_fake"] = FakeUserStorage()
+            return cls._instances["user_storage_fake"]
 
         else:
             logger.error(f"Unknown database type: {storage_type}")

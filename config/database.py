@@ -4,6 +4,7 @@ import os
 from typing import Optional
 
 from pymongo import MongoClient
+from pymongo.database import Database
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 
 from lib_logging.logger import get_logger
@@ -29,10 +30,10 @@ class MongoDBConfig:
     def connection_string(self) -> str:
         """Generate connection string from config."""
         if self.uri:
-            return self.uri
+            return str(self.uri)
 
         if self.username and self.password:
-            return f"mongodb://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+            return f"mongodb://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}?authSource=admin"
         return f"mongodb://{self.host}:{self.port}"
 
     def __repr__(self) -> str:
@@ -84,7 +85,7 @@ class MongoDBConnection:
         """
         try:
             logger.info(f"Connecting to MongoDB: {config}")
-            client = MongoClient(
+            client: MongoClient = MongoClient(
                 config.connection_string,
                 serverSelectionTimeoutMS=5000,
                 connectTimeoutMS=10000,
@@ -99,7 +100,7 @@ class MongoDBConnection:
             raise
 
     @classmethod
-    def get_database(cls, config: Optional[MongoDBConfig] = None):
+    def get_database(cls, config: Optional[MongoDBConfig] = None) -> Database:
         """
         Get MongoDB database instance.
 
