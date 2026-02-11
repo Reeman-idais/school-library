@@ -34,6 +34,7 @@ class Book:
         author: str,
         status: "Optional[BookStatus]" = None,
         picked_by: Optional[str] = None,
+        **kwargs,
     ) -> "Book":
         """Create a new book.
 
@@ -43,10 +44,14 @@ class Book:
             author: book author
             status: optional BookStatus (defaults to AVAILABLE)
             picked_by: optional username who picked the book
+            **kwargs: ignore any additional fields (forward-compatibility)
 
-        The additional optional kwargs keep the factory flexible for
-        storage and deserialization callers that may pass these fields.
+        The factory is intentionally forgiving: callers (storage layers,
+        deserializers or third-party code) may pass extra keys — silently
+        ignore them to remain robust across data shape changes.
         """
+        # Accept and ignore unexpected kwargs to be defensive against callers
+        # that pass the whole document (e.g. `Book.create(**doc)`).
         return cls(
             id=book_id,
             title=title.strip(),

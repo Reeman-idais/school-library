@@ -47,6 +47,22 @@ class TestBook:
         assert book.status == BookStatus.PICKED
         assert book.picked_by == "alice"
 
+    def test_create_ignores_extra_kwargs(self):
+        """Book.create should ignore unexpected kwargs (forward-compatible)."""
+        # simulate callers that pass full document or extra fields
+        book = Book.create(
+            3,
+            "Extra Book",
+            "Some Author",
+            status=BookStatus.AVAILABLE,
+            picked_by=None,
+            unexpected_field="x",
+            _meta={"a": 1},
+        )
+        assert book.id == 3
+        assert book.title == "Extra Book"
+        assert book.status == BookStatus.AVAILABLE
+
 
 class TestUser:
     """Test User model."""
