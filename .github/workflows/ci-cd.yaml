@@ -2,9 +2,9 @@ name: CI/CD - Full Pipeline
 
 on:
   push:
-    branches: ['**']   # جميع الفروع
+    branches: ['**']
   pull_request:
-    branches: ['**']   # جميع PRs
+    branches: ['**']
 
 env:
   PYTHON_VERSION: '3.10'
@@ -12,7 +12,7 @@ env:
   DOCKER_TAG: v1
 
 jobs:
-  # 1️⃣ Build & Test (runs on Ubuntu)
+  # 1️⃣ Build & Test
   build_test:
     runs-on: ubuntu-latest
 
@@ -22,12 +22,12 @@ jobs:
         env:
           MONGO_INITDB_ROOT_USERNAME: admin
           MONGO_INITDB_ROOT_PASSWORD: admin
-          MONGO_INITDB_DATABASE: school_library_test
+          MONGO_INITDB_DATABASE: school_library
         options: >-
           --health-cmd "mongosh -u admin -p admin --authenticationDatabase admin --eval 'db.adminCommand(\"ping\")'"
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 5
+          --health-retries 10
           --health-start-period 10s
         ports:
           - 27017:27017
@@ -36,7 +36,7 @@ jobs:
       DATABASE_TYPE: mongodb
       MONGODB_HOST: localhost
       MONGODB_PORT: 27017
-      MONGODB_DATABASE: school_library_test
+      MONGODB_DATABASE: school_library
       MONGODB_USERNAME: admin
       MONGODB_PASSWORD: admin
 
@@ -53,7 +53,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip poetry
-          poetry install --no-interaction --no-ansi
+          poetry install --no-root --no-interaction --no-ansi
 
       - name: Lint (flake8)
         run: poetry run flake8 . || true
@@ -66,11 +66,11 @@ jobs:
           import pymongo
           from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 
-          max_retries = 30
+          max_retries = 60
           for attempt in range(max_retries):
               try:
                   client = pymongo.MongoClient(
-                      'mongodb://admin:admin@localhost:27017/school_library_test',
+                      'mongodb://admin:admin@localhost:27017/school_library?authSource=admin',
                       serverSelectionTimeoutMS=5000
                   )
                   client.admin.command('ping')
@@ -86,7 +86,7 @@ jobs:
       - name: Run tests with coverage
         run: poetry run pytest -v --cov=. --cov-report=term-missing
 
-  # 2️⃣ Docker Build & Push (runs only on main)
+  # 2️⃣ Docker Build & Push (only on main)
   docker:
     runs-on: ubuntu-latest
     needs: build_test
