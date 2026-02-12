@@ -56,5 +56,8 @@ USER appuser
 # Expose port
 EXPOSE 8000
 
-# Default command: run the application web UI (recommended)
+# Default command: run the application wrapper that respects env
 CMD ["python", "run_app.py"]
+
+# Ensure python-dotenv is available inside the image (defensive)
+RUN /app/.venv/bin/pip show python-dotenv || /app/.venv/bin/pip install python-dotenv

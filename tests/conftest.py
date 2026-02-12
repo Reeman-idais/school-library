@@ -1,24 +1,36 @@
 """Pytest configuration and fixtures."""
 
+import os
 import sys
 from pathlib import Path
 from unittest.mock import Mock
+
+import pytest
+
+from lib_logging.logger import get_logger
+from models.book import Book
+from models.role import Role
+from models.user import User
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-import pytest  # noqa: E402
+logger = get_logger(__name__)
 
-from lib_logging.logger import get_logger  # noqa: E402
-from models.book import Book  # noqa: E402
-from models.role import Role  # noqa: E402
-from models.user import User  # noqa: E402
-
-# NOTE: MongoDB fixtures are intentionally NOT auto-imported here.
-# Integration tests live under tests/integration/ and include their own conftest
-# that sets up MongoDB fixtures. This keeps the default test run fast and
-# independent of MongoDB (good for CI).
+"""
+Import mongodb fixtures (kept in a separate file) only when running
+integration tests. Set environment variable `RUN_INTEGRATION=1` to enable.
+This avoids module-level pytest.skip() during regular test runs.
+"""
+if os.environ.get("RUN_INTEGRATION") == "1":
+    try:
+        from .conftest_mongodb import *  # noqa: F401,F403
+    except Exception:
+        try:
+            from tests.conftest_mongodb import *  # noqa: F401,F403
+        except Exception:
+            pass
 
 
 @pytest.fixture
