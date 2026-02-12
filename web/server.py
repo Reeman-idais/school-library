@@ -332,14 +332,14 @@ class LibraryWebHandler(http.server.BaseHTTPRequestHandler):
     def _convert_positional_args_to_flags(self, command, args):
         """
         Convert positional arguments to flag-based arguments for CLI commands.
-        
+
         Maps commands that use --flag format to their expected arguments.
         Supports both positional args and inline flags (e.g., "--librarian").
-        
+
         Args:
             command: Command name (e.g., 'register-user')
             args: List of positional arguments or mixed args/flags
-            
+
         Returns:
             Converted list of flag-based arguments
         """
@@ -357,33 +357,33 @@ class LibraryWebHandler(http.server.BaseHTTPRequestHandler):
             "list-books": [],
             "list-picked": [],
         }
-        
+
         if command not in command_arg_specs:
             # If command not in mapping, pass args as-is
             return args
-        
+
         # Separate positional args from flag args
         positional_args = []
         flag_args = []
-        
+
         for arg in args:
             if arg.startswith("--"):
                 flag_args.append(arg)
             else:
                 positional_args.append(arg)
-        
+
         # Convert positional args to flags
         required_flags = command_arg_specs[command]
         converted = []
-        
+
         for i, arg in enumerate(positional_args):
             if i < len(required_flags):
                 converted.append(required_flags[i])
                 converted.append(arg)
-        
+
         # Append any flag arguments (e.g., --librarian, --username=value)
         converted.extend(flag_args)
-        
+
         return converted
 
     def handle_execute_api(self):
@@ -461,7 +461,7 @@ class LibraryWebHandler(http.server.BaseHTTPRequestHandler):
         try:
             # Convert positional args to flag-based args for commands that require it
             converted_args = self._convert_positional_args_to_flags(command, args)
-            
+
             # Build command: python main.py <command> <converted_args>
             main_py = self.PROJECT_ROOT / "main.py"
             cmd = [sys.executable, str(main_py), command] + converted_args
