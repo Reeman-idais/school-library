@@ -329,6 +329,63 @@ class LibraryWebHandler(http.server.BaseHTTPRequestHandler):
             logger.error(f"Error serving books API: {e}")
             self.send_error(500, f"Error retrieving books: {str(e)}")
 
+    def _convert_positional_args_to_flags(self, command, args):
+        """
+        Convert positional arguments to flag-based arguments for CLI commands.
+        
+        Maps commands that use --flag format to their expected arguments.
+        Supports both positional args and inline flags (e.g., "--librarian").
+        
+        Args:
+            command: Command name (e.g., 'register-user')
+            args: List of positional arguments or mixed args/flags
+            
+        Returns:
+            Converted list of flag-based arguments
+        """
+        # Define command argument mappings (position -> flag name)
+        # Only include required positional args; flags like --librarian are passed through
+        command_arg_specs = {
+            "register-user": ["--username", "--password", "--role"],
+            "add-book": ["--id", "--title", "--author"],
+            "update-book": ["--id", "--title", "--author"],
+            "delete-book": ["--id"],
+            "pick-book": ["--book-id"],
+            "approve-borrow": ["--book-id"],
+            "return-book": ["--book-id"],
+            "update-status": ["--id", "--status"],
+            "list-books": [],
+            "list-picked": [],
+        }
+        
+        if command not in command_arg_specs:
+            # If command not in mapping, pass args as-is
+            return args
+        
+        # Separate positional args from flag args
+        positional_args = []
+        flag_args = []
+        
+        for arg in args:
+            if arg.startswith("--"):
+                flag_args.append(arg)
+            else:
+                positional_args.append(arg)
+        
+        # Convert positional args to flags
+        required_flags = command_arg_specs[command]
+        converted = []
+        
+        for i, arg in enumerate(positional_args):
+            if i < len(required_flags):
+                converted.append(required_flags[i])
+                converted.append(arg)
+        
+        # Append any flag arguments (e.g., --librarian, --username=value)
+        converted.extend(flag_args)
+        
+        return converted
+
     def handle_execute_api(self):
         """Handle command execution API (public endpoint)."""
         try:
@@ -396,15 +453,18 @@ class LibraryWebHandler(http.server.BaseHTTPRequestHandler):
 
         Args:
             command: Command name (e.g., 'add-book')
-            args: List of arguments
+            args: List of arguments (positional or will be converted to flags)
 
         Returns:
             Dictionary with execution results
         """
         try:
-            # Build command: python main.py <command> <args>
+            # Convert positional args to flag-based args for commands that require it
+            converted_args = self._convert_positional_args_to_flags(command, args)
+            
+            # Build command: python main.py <command> <converted_args>
             main_py = self.PROJECT_ROOT / "main.py"
-            cmd = [sys.executable, str(main_py), command] + args
+            cmd = [sys.executable, str(main_py), command] + converted_args
 
             # Copy current environment (already has .env loaded at startup)
             env = os.environ.copy()
