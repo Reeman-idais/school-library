@@ -37,8 +37,9 @@ COPY --from=builder /app/.venv /app/.venv
 # Copy application code
 COPY --chown=appuser:appuser . .
 
-# Create logs directory
-RUN mkdir -p logs && chown -R appuser:appuser logs
+# Create logs and data directories and set ownership
+# Ensure the app can write to its data and logs folders at runtime
+RUN mkdir -p logs data && chown -R appuser:appuser logs data
 
 # Set environment variables
 ENV PATH="/app/.venv/bin:$PATH" \
