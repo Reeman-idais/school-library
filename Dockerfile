@@ -24,7 +24,7 @@ RUN poetry config virtualenvs.in-project true && \
     poetry install --no-root --only main --no-interaction --no-ansi
 
 # Stage 2: Runtime
-FROM python:3.11-slim
+FROM python:3.10-slim
 
 WORKDIR /app
 
@@ -50,6 +50,10 @@ ENV PATH="/app/.venv/bin:$PATH" \
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import http.client; conn = http.client.HTTPConnection('localhost', 8000); conn.request('GET', '/health'); conn.getresponse()"
 
+# Ensure python-dotenv is available inside the image (defensive)
+# Run as root and use the venv's python to avoid shebang/interpreter mismatches
+RUN /app/.venv/bin/python -m pip show python-dotenv || /app/.venv/bin/python -m pip install --no-cache-dir python-dotenv
+
 # Switch to non-root user
 USER appuser
 
@@ -58,6 +62,3 @@ EXPOSE 8000
 
 # Default command: run the application wrapper that respects env
 CMD ["python", "run_app.py"]
-
-# Ensure python-dotenv is available inside the image (defensive)
-RUN /app/.venv/bin/pip show python-dotenv || /app/.venv/bin/pip install python-dotenv
