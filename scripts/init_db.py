@@ -2,22 +2,30 @@
 """Initialize database with test users and books if empty."""
 
 import sys
+import traceback
 from pathlib import Path
 
 from dotenv import load_dotenv
-
 from models.book import Book
 from models.role import Role
 from storage.factory import StorageFactory
-
-# Add project root to path
+# -------------------------------
+# Add project root to Python path
+# -------------------------------
+# ROOT = مجلد المشروع الرئيسي الذي يحتوي على main.py و models/
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-# Load environment variables
+# -------------------------------
+# Load environment variables from .env if it exists
+# -------------------------------
 env_file = ROOT / ".env"
 if env_file.exists():
     load_dotenv(env_file)
+
+# -------------------------------
+# Import project modules
+# -------------------------------
 
 
 def init_db():
@@ -28,14 +36,15 @@ def init_db():
         user_storage = factory.create_user_storage()
         book_storage = factory.create_book_storage()
 
-        # Test users with passwords matching what's in .env comments
+        # -------------------------------
+        # Test users
+        # -------------------------------
         test_users = [
             ("admin", "1234", Role.LIBRARIAN),  # librarian default
             ("tala", "1234", Role.USER),  # user default
             ("reman", "4321", Role.USER),  # another user
         ]
 
-        # Add test users if they don't exist
         users_added = 0
         for username, password, role in test_users:
             existing_user = user_storage.get_user_by_username(username)
@@ -46,7 +55,9 @@ def init_db():
             else:
                 print(f"✓ User already exists: {username}")
 
-        # Add test books if they don't exist
+        # -------------------------------
+        # Test books
+        # -------------------------------
         test_books = [
             (1001, "A Brief History of Time", "Stephen Hawking"),
             (1002, "The Pragmatic Programmer", "Andrew Hunt, David Thomas"),
@@ -67,6 +78,9 @@ def init_db():
             else:
                 print(f"✓ Book already exists: {title} (ID: {book_id})")
 
+        # -------------------------------
+        # Final status
+        # -------------------------------
         if users_added > 0 or books_added > 0:
             print(
                 f"\n✓ Database initialized: {users_added} users, {books_added} books added"
@@ -78,8 +92,6 @@ def init_db():
 
     except Exception as e:
         print(f"✗ Error initializing database: {e}")
-        import traceback
-
         traceback.print_exc()
         return False
 
