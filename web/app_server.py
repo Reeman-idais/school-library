@@ -61,8 +61,8 @@ class AppWebHandler(LibraryWebHandler):
 def run_server(port=8000):
     """تشغيل الخادم مع دعم واجهة المستخدم الجديدة"""
     import http.server
-    from pathlib import Path
     import subprocess
+    from pathlib import Path
 
     # Initialize database with test data
     init_script = Path(__file__).parent.parent / "scripts" / "init_db.py"

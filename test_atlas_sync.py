@@ -26,7 +26,7 @@ def test_atlas_connection():
     print("=" * 60)
 
     try:
-        from config.database import MongoDBConnection, MongoDBConfig
+        from config.database import MongoDBConfig, MongoDBConnection
 
         # عرض الإعدادات
         config = MongoDBConfig()

@@ -7,8 +7,8 @@ Tests the complete workflow: login → view books → add book → pick book
 import json
 import sys
 import time
-from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 
 class Colors:
