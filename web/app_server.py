@@ -61,11 +61,31 @@ class AppWebHandler(LibraryWebHandler):
 def run_server(port=8000):
     """تشغيل الخادم مع دعم واجهة المستخدم الجديدة"""
     import http.server
+    from pathlib import Path
+    import subprocess
+
+    # Initialize database with test data
+    init_script = Path(__file__).parent.parent / "scripts" / "init_db.py"
+    if init_script.exists():
+        try:
+            print("\nInitializing database...")
+            result = subprocess.run(
+                [sys.executable, str(init_script)],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            if result.stdout:
+                print(result.stdout)
+            if result.returncode != 0 and result.stderr:
+                print(f"Warning: {result.stderr}")
+        except Exception as e:
+            print(f"Warning: Could not initialize database: {e}")
 
     server_address = ("", port)
     httpd = http.server.HTTPServer(server_address, AppWebHandler)
 
-    print("Library Management System - Web Interface")
+    print("\nLibrary Management System - Web Interface")
     print(f"Server running at http://localhost:{port}/")
     print(f"  - New User App:    http://localhost:{port}/app")
     print(f"  - Documentation:   http://localhost:{port}/docs.html")

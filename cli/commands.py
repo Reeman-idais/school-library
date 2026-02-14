@@ -137,8 +137,6 @@ def handle_add_book(
         return 1
 
     assert book is not None, "book should not be None after successful add"
-    print(f"SUCCESS: Added book '{book.title}' by {book.author} (ID: {book.id})")
-    return 0
     isbn_display = f" (ISBN: {book.isbn})" if book.isbn else ""
     print(
         f"SUCCESS: Added book '{book.title}' by {book.author} (ID: {book.id}){isbn_display}"

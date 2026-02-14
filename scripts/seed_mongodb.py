@@ -4,15 +4,21 @@
 import sys
 import time
 from pathlib import Path
+from dotenv import load_dotenv
+from config.database import MongoDBConfig, MongoDBConnection
+from models.role import Role
+from storage.mongodb.book_storage import MongoDBBookStorage
+from storage.mongodb.user_storage import MongoDBUserStorage
 
 # Make sure project root is importable
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from config.database import MongoDBConfig, MongoDBConnection  # noqa: E402
-from models.role import Role  # noqa: E402
-from storage.mongodb.book_storage import MongoDBBookStorage  # noqa: E402
-from storage.mongodb.user_storage import MongoDBUserStorage  # noqa: E402
+# Load environment variables from .env file
+env_file = ROOT / ".env"
+if env_file.exists():
+    load_dotenv(env_file)
+    print(f"Loaded .env from: {env_file}")
 
 
 def main():

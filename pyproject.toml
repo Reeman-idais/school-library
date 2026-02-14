@@ -46,11 +46,15 @@ extend-ignore = ["E203", "W503", "E704"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
 markers = [
     "unit: unit tests",
     "integration: integration tests",
 ]
 addopts = "-v"
+norecursedirs = ["scripts", "archived", ".venv"]
 
 [tool.mypy]
 python_version = "3.10"

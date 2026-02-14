@@ -50,6 +50,7 @@ if PROMETHEUS_AVAILABLE:
     APPLICATION_ERRORS_TOTAL = Counter(
         "library_application_errors_total",
         "Total application errors",
+        ["component"],
     )
 
 # Logger
@@ -148,6 +149,8 @@ class LibraryWebHandler(http.server.BaseHTTPRequestHandler):
 
         if api_path == "/api/execute":
             self.handle_execute_api()
+        elif api_path == "/api/login":
+            self.handle_login_api()
         else:
             self.send_error(404, "Endpoint not found")
 
@@ -329,6 +332,58 @@ class LibraryWebHandler(http.server.BaseHTTPRequestHandler):
             logger.error(f"Error serving books API: {e}")
             self.send_error(500, f"Error retrieving books: {str(e)}")
 
+    def handle_login_api(self):
+        """Handle user login and authenticate against the database."""
+        try:
+            content_length = int(self.headers.get("Content-Length", 0))
+            if content_length == 0:
+                self.send_error(400, "Empty request body")
+                return
+
+            body = self.rfile.read(content_length)
+            data = json.loads(body.decode("utf-8"))
+
+            username = data.get("username")
+            password = data.get("password")
+
+            if not username or not password:
+                self.send_json_response(
+                    {"success": False, "message": "Username and password are required"},
+                    status=400,
+                )
+                return
+
+            from core.factory import ServiceFactory
+
+            factory = ServiceFactory()
+            user_service = factory.create_user_service()
+            user = user_service.storage.get_user_by_username(username)
+
+            if user and user.password == password:
+                logger.info(f"User '{username}' authenticated successfully.")
+                self.send_json_response(
+                    {
+                        "success": True,
+                        "role": user.role.value,
+                        "username": user.username,
+                    }
+                )
+            else:
+                logger.warning(f"Authentication failed for user '{username}'.")
+                self.send_json_response(
+                    {"success": False, "message": "Invalid username or password"},
+                    status=401,
+                )
+
+        except json.JSONDecodeError:
+            self.send_error(400, "Invalid JSON in request body")
+        except Exception as e:
+            logger.error(f"Exception in handle_login_api: {e}", exc_info=True)
+            self.send_json_response(
+                {"success": False, "message": f"An internal error occurred: {e}"},
+                status=500,
+            )
+
     def _convert_positional_args_to_flags(self, command, args):
         """
         Convert positional arguments to flag-based arguments for CLI commands.
@@ -350,9 +405,9 @@ class LibraryWebHandler(http.server.BaseHTTPRequestHandler):
             "add-book": ["--id", "--title", "--author"],
             "update-book": ["--id", "--title", "--author"],
             "delete-book": ["--id"],
-            "pick-book": ["--book-id"],
-            "approve-borrow": ["--book-id"],
-            "return-book": ["--book-id"],
+            "pick-book": ["--id", "--username"],
+            "approve-borrow": ["--id"],
+            "return-book": ["--id"],
             "update-status": ["--id", "--status"],
             "list-books": [],
             "list-picked": [],
@@ -362,7 +417,17 @@ class LibraryWebHandler(http.server.BaseHTTPRequestHandler):
             # If command not in mapping, pass args as-is
             return args
 
-        # Separate positional args from flag args
+        # Filter empty strings first
+        args = [arg for arg in args if arg and str(arg).strip()]
+
+        # Check if args already start with a flag (indicating flag format mode)
+        # e.g., ['--id', '1001', '--librarian'] vs ['1001', 'Title', 'Author', '--librarian']
+        if args and args[0].startswith("--"):
+            # Args are already in flag format
+            # Just return them as-is
+            return args
+
+        # Handle positional args format (e.g., ['1001', 'Title', 'Author', '--librarian'])
         positional_args = []
         flag_args = []
 
@@ -381,7 +446,7 @@ class LibraryWebHandler(http.server.BaseHTTPRequestHandler):
                 converted.append(required_flags[i])
                 converted.append(arg)
 
-        # Append any flag arguments (e.g., --librarian, --username=value)
+        # Append any flag arguments (e.g., --librarian)
         converted.extend(flag_args)
 
         return converted
@@ -459,12 +524,59 @@ class LibraryWebHandler(http.server.BaseHTTPRequestHandler):
             Dictionary with execution results
         """
         try:
+            # Debug: Log raw args
+            logger.info(f"Raw args type: {type(args)}, value: {args}")
+            logger.info(f"Raw args repr: {repr(args)}")
+            if isinstance(args, list):
+                for i, arg in enumerate(args):
+                    logger.info(
+                        f"  arg[{i}]: type={type(arg).__name__} repr={repr(arg)} hex={arg.encode()}"
+                    )
+
+            # Validate minimum required arguments
+            command_arg_specs = {
+                "register-user": 3,
+                "add-book": 3,
+                "update-book": 3,
+                "delete-book": 1,
+                "pick-book": 2,
+                "approve-borrow": 1,
+                "return-book": 1,
+                "update-status": 2,
+                "list-books": 0,
+                "list-picked": 0,
+            }
+
+            # Count non-empty positional args
+            positional_count = sum(
+                1 for arg in args if not arg.startswith("--") and arg.strip()
+            )
+            min_required = command_arg_specs.get(command, 0)
+
+            if positional_count < min_required:
+                return {
+                    "success": False,
+                    "stdout": "",
+                    "stderr": f"Command '{command}' requires at least {min_required} arguments, but got {positional_count}",
+                    "exit_code": 1,
+                }
+
             # Convert positional args to flag-based args for commands that require it
             converted_args = self._convert_positional_args_to_flags(command, args)
+
+            # Ensure all args are strings (important for JSON numbers like 3001 from frontend)
+            converted_args = [str(arg) for arg in converted_args]
+
+            logger.info(f"Converted args: {converted_args}")
 
             # Build command: python main.py <command> <converted_args>
             main_py = self.PROJECT_ROOT / "main.py"
             cmd = [sys.executable, str(main_py), command] + converted_args
+
+            # Debug: Log the command being executed
+            debug_msg = f"[EXECUTE] Final cmd list: {cmd}"
+            logger.info(debug_msg)
+            print(debug_msg, flush=True)
 
             # Copy current environment (already has .env loaded at startup)
             env = os.environ.copy()
@@ -474,7 +586,7 @@ class LibraryWebHandler(http.server.BaseHTTPRequestHandler):
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=5,
+                timeout=30,
                 cwd=str(self.PROJECT_ROOT),
                 env=env,
             )
@@ -497,6 +609,7 @@ class LibraryWebHandler(http.server.BaseHTTPRequestHandler):
                 "exit_code": 1,
             }
         except Exception as e:
+            logger.error(f"Exception in execute_command: {e}", exc_info=True)
             return {
                 "success": False,
                 "stdout": "",

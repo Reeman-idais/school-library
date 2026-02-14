@@ -55,10 +55,12 @@ def create_parser() -> argparse.ArgumentParser:
         "add-book", help="Add a new book (librarian only)"
     )
     add_book_parser.add_argument(
-        "--id", required=True, dest="book_id", help="Book ID (integer)"
+        "--id", required=True, dest="book_id", type=str, help="Book ID (integer)"
     )
-    add_book_parser.add_argument("--title", required=True, help="Book title")
-    add_book_parser.add_argument("--author", required=True, help="Book author")
+    add_book_parser.add_argument("--title", required=True, type=str, help="Book title")
+    add_book_parser.add_argument(
+        "--author", required=True, type=str, help="Book author"
+    )
     add_book_parser.add_argument(
         "--librarian", action="store_true", help="Login as librarian"
     )
@@ -68,7 +70,7 @@ def create_parser() -> argparse.ArgumentParser:
         "delete-book", help="Delete a book (librarian only)"
     )
     delete_book_parser.add_argument(
-        "--id", required=True, dest="book_id", help="Book ID (integer)"
+        "--id", required=True, dest="book_id", type=str, help="Book ID (integer)"
     )
     delete_book_parser.add_argument(
         "--librarian", action="store_true", help="Login as librarian"
@@ -79,24 +81,25 @@ def create_parser() -> argparse.ArgumentParser:
         "update-book", help="Update book info (librarian only)"
     )
     update_book_parser.add_argument(
-        "--id", required=True, dest="book_id", help="Book ID (integer)"
+        "--id", required=True, dest="book_id", type=str, help="Book ID (integer)"
     )
     update_book_parser.add_argument(
         "--librarian", action="store_true", help="Login as librarian"
     )
-    update_book_parser.add_argument("--title", help="New title")
-    update_book_parser.add_argument("--author", help="New author")
+    update_book_parser.add_argument("--title", type=str, help="New title")
+    update_book_parser.add_argument("--author", type=str, help="New author")
 
     # --- update-status ---
     update_status_parser = subparsers.add_parser(
         "update-status", help="Update book status (librarian only)"
     )
     update_status_parser.add_argument(
-        "--id", required=True, dest="book_id", help="Book ID (integer)"
+        "--id", required=True, dest="book_id", type=str, help="Book ID (integer)"
     )
     update_status_parser.add_argument(
         "--status",
         required=True,
+        type=str,
         choices=["Available", "Picked", "Borrowed"],
         help="New status",
     )
@@ -112,17 +115,17 @@ def create_parser() -> argparse.ArgumentParser:
     login_group.add_argument(
         "--librarian", action="store_true", help="Login as librarian"
     )
-    login_group.add_argument("--username", help="Username for user login")
+    login_group.add_argument("--username", type=str, help="Username for user login")
 
     # --- pick-book ---
     pick_book_parser = subparsers.add_parser(
         "pick-book", help="Pick a book for borrowing (user only)"
     )
     pick_book_parser.add_argument(
-        "--id", required=True, dest="book_id", help="Book ID (integer)"
+        "--id", required=True, dest="book_id", type=str, help="Book ID (integer)"
     )
     pick_book_parser.add_argument(
-        "--username", required=True, help="Username to identify the user"
+        "--username", required=True, type=str, help="Username to identify the user"
     )
 
     # --- list-picked ---
@@ -139,7 +142,7 @@ def create_parser() -> argparse.ArgumentParser:
         help="Approve a picked book and change status to Borrowed (librarian only)",
     )
     approve_borrow_parser.add_argument(
-        "--id", required=True, dest="book_id", help="Book ID (integer)"
+        "--id", required=True, dest="book_id", type=str, help="Book ID (integer)"
     )
     approve_borrow_parser.add_argument(
         "--librarian", action="store_true", help="Login as librarian"
@@ -151,7 +154,7 @@ def create_parser() -> argparse.ArgumentParser:
         help="Return a borrowed book to Available status (librarian only)",
     )
     return_book_parser.add_argument(
-        "--id", required=True, dest="book_id", help="Book ID (integer)"
+        "--id", required=True, dest="book_id", type=str, help="Book ID (integer)"
     )
     return_book_parser.add_argument(
         "--librarian", action="store_true", help="Login as librarian"
@@ -159,10 +162,16 @@ def create_parser() -> argparse.ArgumentParser:
 
     # --- register-user ---
     register_parser = subparsers.add_parser("register-user", help="Register a new user")
-    register_parser.add_argument("--username", required=True, help="Username")
-    register_parser.add_argument("--password", required=True, help="User password")
+    register_parser.add_argument("--username", required=True, type=str, help="Username")
     register_parser.add_argument(
-        "--role", required=True, choices=["librarian", "user"], help="User role"
+        "--password", required=True, type=str, help="User password"
+    )
+    register_parser.add_argument(
+        "--role",
+        required=True,
+        type=str,
+        choices=["librarian", "user"],
+        help="User role",
     )
 
     return parser
@@ -223,9 +232,30 @@ def main():
         parser.print_help()
         return 1
 
+    # Only create services that are actually needed for the command
+    # This reduces startup time and MongoDB connection errors for simple commands
+    book_service = None
+    user_service = None
+
+    # Commands that require book service
+    book_commands = {
+        "add-book",
+        "delete-book",
+        "update-book",
+        "update-status",
+        "list-books",
+        "pick-book",
+        "list-picked",
+        "approve-borrow",
+        "return-book",
+    }
+    # Commands that require user service
+    user_commands = {"register-user"}
     service_factory = ServiceFactory()
-    book_service = service_factory.create_book_service()
-    user_service = service_factory.create_user_service()
+    if args.command in book_commands:
+        book_service = service_factory.create_book_service()
+    if args.command in user_commands:
+        user_service = service_factory.create_user_service()
 
     try:
         return execute_command(args, book_service, user_service)

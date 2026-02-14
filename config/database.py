@@ -17,14 +17,21 @@ class MongoDBConfig:
 
     def __init__(self):
         """Initialize MongoDB configuration from environment variables."""
-        # Read from environment variables with defaults
-        self.host = os.getenv("MONGODB_HOST", "localhost")
-        self.port = int(os.getenv("MONGODB_PORT", "27017"))
+        # Allow both MONGODB_URI and MONGO_URI environment variable names
+        # Check URI first (preferred for production/Atlas)
+        self.uri = os.getenv("MONGODB_URI", "") or os.getenv("MONGO_URI", "")
+
+        # Only read host/port if URI is not set (for local development)
+        if not self.uri:
+            self.host = os.getenv("MONGODB_HOST", "localhost")
+            self.port = int(os.getenv("MONGODB_PORT", "27017"))
+        else:
+            self.host = ""
+            self.port = 0
+
         self.database = os.getenv("MONGODB_DATABASE", "school_library")
         self.username = os.getenv("MONGODB_USERNAME", "")
         self.password = os.getenv("MONGODB_PASSWORD", "")
-        # Allow both MONGODB_URI and MONGO_URI environment variable names
-        self.uri = os.getenv("MONGODB_URI", "") or os.getenv("MONGO_URI", "")
 
     @property
     def connection_string(self) -> str:

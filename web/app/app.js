@@ -6,12 +6,6 @@
   'use strict';
 
   const STORAGE_KEY = 'library_session';
-  // المستخدمون المصرح لهم: admin/admin (أمين مكتبة)، tala/1234، reman/4321 (مستخدمون)
-  const AUTH = {
-    admin: { password: 'admin', role: 'librarian' },
-    tala: { password: '1234', role: 'user' },
-    reman: { password: '4321', role: 'user' }
-  };
   let currentRole = null;
   let currentUsername = null;
   let allUserBooks = [];
@@ -394,12 +388,24 @@
     showPage('login');
   }
 
-  function validateLogin(username, password) {
-    const u = (username || '').trim().toLowerCase();
-    const p = (password || '').trim();
-    const cred = AUTH[u];
-    if (!cred || cred.password !== p) return null;
-    return { role: cred.role, username: cred.role === 'user' ? u : null };
+  // Authenticate via backend API
+  async function authenticateUser(username, password) {
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: (username || '').trim(), password: (password || '').trim() }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        return { role: data.role, username: data.username };
+      }
+      toast(data.message || 'اسم المستخدم أو كلمة المرور غير صحيحة', 'error');
+      return null;
+    } catch (err) {
+      toast('خطأ في الاتصال بالخادم. تأكد من تشغيل الخادم.', 'error');
+      return null;
+    }
   }
 
   // ========== تهيئة الأحداث ==========
@@ -408,19 +414,18 @@
     const inputUsername = $('#input-username');
     const inputPassword = $('#input-password');
 
-    formLogin.addEventListener('submit', (e) => {
+    formLogin.addEventListener('submit', async (e) => {
       e.preventDefault();
       const username = inputUsername.value.trim();
       const password = inputPassword.value;
 
-      const result = validateLogin(username, password);
+      const result = await authenticateUser(username, password);
       if (!result) {
-        toast('اسم المستخدم أو كلمة المرور غير صحيحة', 'error');
         return;
       }
 
       currentRole = result.role;
-      currentUsername = result.username;
+      currentUsername = result.username || username;
       setSession(result.role, currentUsername);
 
       if (result.role === 'user') {
@@ -485,7 +490,11 @@
         toast('املأ جميع الحقول', 'error');
         return;
       }
-      const r = await api('add-book', ['--id', id, '--title', title, '--author', author, '--librarian']);
+      if (!/^\d{4,}$/.test(id)) {
+        toast('رقم الكتاب يجب أن يكون 4 أرقام على الأقل', 'error');
+        return;
+      }
+      const r = await api('add-book', [id, title, author, '--librarian']);
       if (r.success) {
         toast('تمت إضافة الكتاب', 'success');
         e.target.reset();
@@ -499,13 +508,17 @@
     $('#form-register')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const username = $('#reg-username').value.trim();
+      const password = $('#reg-password').value.trim();
       const role = $('#reg-role').value.trim();
-      if (!username || !role) {
+      if (!username || !password || !role) {
         toast('املأ جميع الحقول', 'error');
         return;
       }
-      const password = ($('#reg-password').value || '').trim();
-      const r = await api('register-user', ['--username', username, '--password', password, '--role', role]);
+      if (!/^\d+$/.test(password)) {
+        toast('كلمة المرور يجب أن تكون أرقاماً فقط', 'error');
+        return;
+      }
+      const r = await api('register-user', [username, password, role]);
       if (r.success) {
         toast('تم تسجيل المستخدم بنجاح', 'success');
         e.target.reset();
@@ -524,7 +537,7 @@
         toast('املأ جميع الحقول', 'error');
         return;
       }
-      const r = await api('update-book', ['--id', id, '--title', title, '--author', author, '--librarian']);
+      const r = await api('update-book', [id, title, author, '--librarian']);
       if (r.success) {
         toast('تم التعديل', 'success');
         $('#modal-edit').classList.remove('show');
@@ -565,7 +578,7 @@
         list.querySelectorAll('.btn-pick').forEach(btn => {
           btn.addEventListener('click', async () => {
             const id = btn.dataset.id;
-            const r2 = await api('pick-book', ['--id', id, '--username', currentUsername]);
+            const r2 = await api('pick-book', [id, currentUsername]);
             if (r2.success) {
               toast('تم الحجز بنجاح', 'success');
               loadUserBooks();
@@ -581,27 +594,7 @@
       if (allLibBooks.length > 0) renderLibBooksTable(allLibBooks);
     });
 
-    $('#form-register')?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const username = $('#reg-username').value.trim();
-      const password = $('#reg-password').value.trim();
-      const role = $('#reg-role').value;
-      if (!username || !password) {
-        toast('أدخل اسم المستخدم وكلمة المرور', 'error');
-        return;
-      }
-      if (!/^\d+$/.test(password)) {
-        toast('كلمة المرور يجب أن تكون أرقاماً فقط', 'error');
-        return;
-      }
-      const r = await api('register-user', ['--username', username, '--password', password, '--role', role]);
-      if (r.success) {
-        toast('تم التسجيل', 'success');
-        e.target.reset();
-      } else {
-        toast(r.stderr || 'حدث خطأ', 'error');
-      }
-    });
+
 
     // استعادة الجلسة
     const session = getSession();

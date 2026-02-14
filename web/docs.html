@@ -921,30 +921,31 @@ if result.returncode != 0:
             const commandMap = {
                 'register-user': () => {
                     const username = document.getElementById('field-username')?.value;
+                    const password = document.getElementById('field-password')?.value;
                     const role = document.getElementById('field-role')?.value;
-                    if (!username || !role) return null;
-                    return ['--username', username, '--role', role];
+                    if (!username || !password || !role) return null;
+                    return [username, password, role];
                 },
                 'add-book': () => {
                     const id = document.getElementById('field-id')?.value;
                     const title = document.getElementById('field-title')?.value;
                     const author = document.getElementById('field-author')?.value;
                     if (!id || !title || !author) return null;
-                    return ['--id', id, '--title', title, '--author', author, '--librarian'];
+                    return [id, title, author, '--librarian'];
                 },
                 'delete-book': () => {
                     const id = document.getElementById('field-id')?.value;
                     if (!id) return null;
-                    return ['--id', id, '--librarian'];
+                    return [id, '--librarian'];
                 },
                 'update-book': () => {
                     const id = document.getElementById('field-id')?.value;
                     if (!id) return null;
-                    const result = ['--id', id];
+                    const result = [id];
                     const title = document.getElementById('field-title')?.value;
                     const author = document.getElementById('field-author')?.value;
-                    if (title) result.push('--title', title);
-                    if (author) result.push('--author', author);
+                    if (title) result.push(title);
+                    if (author) result.push(author);
                     result.push('--librarian');
                     return result;
                 },
@@ -952,7 +953,7 @@ if result.returncode != 0:
                     const id = document.getElementById('field-id')?.value;
                     const status = document.getElementById('field-status')?.value;
                     if (!id || !status) return null;
-                    return ['--id', id, '--status', status, '--librarian'];
+                    return [id, status, '--librarian'];
                 },
                 'list-books': () => {
                     const userType = document.getElementById('field-user-type')?.value;
@@ -968,7 +969,7 @@ if result.returncode != 0:
                     const id = document.getElementById('field-id')?.value;
                     const username = document.getElementById('field-username')?.value;
                     if (!id || !username) return null;
-                    return ['--id', id, '--username', username];
+                    return [id, username];
                 },
                 'list-picked': () => {
                     return ['--librarian'];
@@ -976,12 +977,12 @@ if result.returncode != 0:
                 'approve-borrow': () => {
                     const id = document.getElementById('field-id')?.value;
                     if (!id) return null;
-                    return ['--id', id, '--librarian'];
+                    return [id, '--librarian'];
                 },
                 'return-book': () => {
                     const id = document.getElementById('field-id')?.value;
                     if (!id) return null;
-                    return ['--id', id, '--librarian'];
+                    return [id, '--librarian'];
                 }
             };
 
