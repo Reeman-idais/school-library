@@ -1,0 +1,49 @@
+name: Trigger auto deployment for schlibrary
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/schlibrary-AutoDeployTrigger-984dcb90-327f-4b7b-aeaf-7e22e18dd35e.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.SCHLIBRARY_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.SCHLIBRARY_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.SCHLIBRARY_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          _dockerfilePathKey_: _dockerfilePath_
+          _targetLabelKey_: _targetLabel_
+          registryUrl: docker.io
+          registryUsername: ${{ secrets.SCHLIBRARY_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.SCHLIBRARY_REGISTRY_PASSWORD }}
+          containerAppName: schlibrary
+          resourceGroup: try1
+          imageToBuild: reeman123/schlibrary:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
